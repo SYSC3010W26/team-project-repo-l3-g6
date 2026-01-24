@@ -10,12 +10,12 @@
 
 2. **Give rough breakdown of hours spent on 1-3 of the following:**
 
-| Rank | Activity | Hours Spent |
-| :--- | :----: | ---: |
-| 1 | Documentation | 2.5 |
-| 2 | Research | 2.5 |
-| 3 | Meetings | 2 |
-| 4 | Design | 1 |
+    | Rank | Activity | Hours Spent |
+    | :--- | :----: | ---: |
+    | 1 | Documentation | 2.5 |
+    | 2 | Research | 2.5 |
+    | 3 | Meetings | 2 |
+    | 4 | Design | 1 |
 
 
 3. **What did you accomplish this week?**
