@@ -2,7 +2,7 @@
 ---
 #### Group number: L3-G6
 #### Student name: Eric McFetridge 101310942
-#### Week: #4 (Jan 28 - Feb 3) 
+#### Week: #5 (Jan 28 - Feb 3) 
 ---
 1. **How many hours did you spend on the project this week? (0-10)**
 	
