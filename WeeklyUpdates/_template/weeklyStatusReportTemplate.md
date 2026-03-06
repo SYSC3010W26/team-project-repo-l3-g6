@@ -1,5 +1,5 @@
 ## Weekly Individual Project Update Report
-### Group number:
+### Group number: L3-G6
 ### Student name:
 ### Week: _(Give week number and also dates covered, where a week is Wed-Tues)_
 ___
