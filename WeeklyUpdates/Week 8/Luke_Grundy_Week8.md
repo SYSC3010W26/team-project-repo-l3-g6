@@ -1,6 +1,6 @@
 ## Weekly Individual Project Update Report
-### Group number:
-### Student name:
+### Group number: L3-G6
+### Student name: Luke Grundy 101268449
 ### Week: 8
 ___
 1. **How many hours did you spend on the project this week? (0-10)**
