@@ -33,8 +33,8 @@
 ## What Is Our Project?
 
 * **Purpose:** solve the cube as fast as possible, and without human input by using a series of subsystems that pipeline the information.
-* **Target Audience:** Anyone who is iterested in Rubiks cubes or cool tech will love Pi Cubed. Especially interesting for those looking to learn more on Desigining Algorithms, Distributed Architecture , Robotics, and Real-Time systems.
-* **Key Features:** Distrubuted system with subsystem heartbeats - Provides a watchdog that can automatically handle errors from subsystems upon detection. Most solvers are not distrubuted in this way. 
+* **Target Audience:** Anyone who is iterested in Rubiks cubes or cool tech will love Pi Cubed. Especially interesting for those looking to learn more on Designing Algorithms, Distributed Architecture , Robotics, and Real-Time systems.
+* **Key Features:** Distrubuted system with subsystem heartbeats - Provides a watchdog that can automatically handle errors from subsystems upon detection. Most solvers are not distrubuted in this way. Persistent database on control server to keep track of all operations and store share data between subsystems. 
 
 ---
 
