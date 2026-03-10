@@ -4,7 +4,6 @@
 > Pi Cubed is a high-speed automated Rubiks cube solver implemented as a distrubuted system.
 > This Repo Contains an overview of the Winter 2026 SYSC3010 Computer Systems Design Project for our team (L3-G6). 
 
-## Demo Render
 ![Pi Cubed Solving System](./screenshots/pi_cubed_design.png)
 
 ---
