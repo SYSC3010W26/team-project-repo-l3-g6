@@ -1,0 +1,20 @@
+# ============================================================
+# SYSC3010 L3-G6 — Python dependencies
+# ============================================================
+
+# Web API framework (Rpi4 GUI/API server)
+fastapi
+
+# ASGI server to run FastAPI
+uvicorn[standard]
+
+# Data validation and serialisation (v2)
+pydantic
+
+# Load .env files for DATABASE_URL and other config
+python-dotenv
+
+# ============================================================
+# Production (Supabase / PostgreSQL) — uncomment on Rpi4
+# ============================================================
+# psycopg2-binary
