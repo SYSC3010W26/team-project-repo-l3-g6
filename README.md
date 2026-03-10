@@ -30,7 +30,7 @@
 | **Basil Thotapilly** | Optical Cube Recognition | Scanner (Sensor) Node | [Email Address](mailto:basilthotapilly@cmail.carleton.ca) |
 ---
 
-## What Is Our Product?
+## What Is Our Project?
 
 * **Purpose:** solve the cube as fast as possible, and without human input by using a series of subsystems that pipeline the information.
 * **Target Audience:** Anyone who is iterested in Rubiks cubes or cool tech will love Pi Cubed. Especially interesting for those looking to learn more on Desigining Algorithms, Distributed Architecture , Robotics, and Real-Time systems.
