@@ -1,5 +1,6 @@
 -- ============================================================
--- SYSC3010 L3-G6 Rubik's Cube Solver — Database Schema
+-- Done By : Saim Hashmi 
+-- SYSC3010 L3-G6 Rubik's Cube Solver — Database Schema 
 -- Target: SQLite (local dev) / Supabase PostgreSQL (production)
 -- ============================================================
 

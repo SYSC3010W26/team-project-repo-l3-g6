@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
+# Created by Saim Hashmi ( Can be edited later )
 # SYSC3010 L3-G6 — Local Development Environment Setup
 # Run once from the project root:  bash setup_dev.sh
 # ============================================================

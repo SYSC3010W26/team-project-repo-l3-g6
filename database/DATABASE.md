@@ -1,4 +1,5 @@
 # Database Layer — SYSC3010 L3-G6 Rubik's Cube Solver
+### Written by : Saim Hashmi
 
 ## Table of Contents
 

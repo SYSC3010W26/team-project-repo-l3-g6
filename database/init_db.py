@@ -1,5 +1,6 @@
 """
 ============================================================
+Done By : Saim Hashmi 
 SYSC3010 L3-G6 — Database Initialiser
 Reads schema.sql, creates all tables in SQLite, seeds a
 default admin user.
