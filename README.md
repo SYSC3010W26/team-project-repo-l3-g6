@@ -24,10 +24,10 @@
 
 | Name | Role | Pi Node | Contact Information |
 | :--- | :--- | :--- | :--- |
-| **Luke Grundy** | Custom Solver Algo - Project Leader | Solver Node | [Email Address](mailto:lukegrundy@cmail.carleton.ca) |
-| **Eric McFetridge** | Motor Logic and Hardware | Motor (Actuator) Node | [Email Address](mailto:ericmcfetridge@cmail.carleton.ca) |
-| **Saim Hashmi** | Server Stack (DB, API, GUI) | Control Server Node | [Email Address](mailto:saimhashmi3@cmail.carleton.ca) |
-| **Basil Thotapilly** | Optical Cube Recognition | Scanner (Sensor) Node | [Email Address](mailto:basilthotapilly@cmail.carleton.ca) |
+| **Luke Grundy** | Custom Solver Algo - Project Leader | Solver Node | [Luke Grundy Cmail](mailto:lukegrundy@cmail.carleton.ca) |
+| **Eric McFetridge** | Motor Logic and Hardware | Motor (Actuator) Node | [Eric McFetridge Cmail](mailto:ericmcfetridge@cmail.carleton.ca) |
+| **Saim Hashmi** | Server Stack (DB, API, GUI) | Control Server Node | [Saim Hashmi Cmail](mailto:saimhashmi3@cmail.carleton.ca) |
+| **Basil Thotapilly** | Optical Cube Recognition | Scanner (Sensor) Node | [Basil Thotapilly Cmail](mailto:basilthotapilly@cmail.carleton.ca) |
 ---
 
 ## What Is Our Project?
