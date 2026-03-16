@@ -19,7 +19,7 @@
 
 ## Subsystem Architecture Diagram
 
-  ![Motor Subsystem Architecture](./screenshots/motorSystemDiagram.png)
+  ![Motor Subsystem Architecture](./screenshots/MotorSystemDiagram.png)
 
 ## Subsystem Wiring Diagram
 
