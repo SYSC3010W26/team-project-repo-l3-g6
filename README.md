@@ -14,7 +14,6 @@
 3. [How Does It Work?](#how-does-it-work)
 4. [How Do I Use It?](#how-do-i-use-it)
 5. [Further Reading](#further-reading)
-6. [License](#license)
 
 ---
 
