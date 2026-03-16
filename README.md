@@ -80,8 +80,4 @@ Controlling Pi Cubed is extrememly easy, as everything a user needs is offered t
 | **Scanning System Details** | [View Docs](./docs/scanner) | Further docs regarding scanner software and hardware. |
 | **Cube Solving Algorithm Details** | [View Docs](./docs/solver) | Explanation of custom solving algorithm. |
 
----
 
-## License
-
-If adding license required in future we can link to ./license here
