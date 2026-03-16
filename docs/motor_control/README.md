@@ -9,6 +9,8 @@
   5. 24V 5A DC Power Supply. (Using variable lab bench supply)
   6. USB A to USB B data cable. (Comes with SKR v1.4)
   7. Spare MicroSD card for flashing Klipper firmware 
+  8. Custom 3D printed motor/cube housing. (Ours is attached to repo in /models)
+  9. Rubiks Cube - Standard size is 5.7 x 5.7 x 5.7 cm
 
 ## Software Components
 
