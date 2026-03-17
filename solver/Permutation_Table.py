@@ -6,7 +6,8 @@ Group L3-G6
 Author: Luke Grundy
 
 Purpose:
-    This module defines the permutation tables for a 3x3 Rubik's Cube using the 54-facelet representation.
+    This module defines the permutation tables for a 3x3 Rubik's Cube using the 54-facelet representation. 
+    It includes the base moves (U, R, F, D, L, B) and their variants (prime and double moves), as well as utility functions for applying moves and sequences of moves to a cube state.
 
 Cube Representation:
     The cube is represented as a list of 54 facelets in the following order:

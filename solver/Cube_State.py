@@ -94,6 +94,8 @@ class Cube:
         """Convert cube list to 54-character string (DB storage)."""
         return "".join(self.state)
 
-    def string_to_cube(self, s):
+    @staticmethod
+    def string_to_cube(s):
         """Convert 54-character string to cube list."""
         return list(s)
+    

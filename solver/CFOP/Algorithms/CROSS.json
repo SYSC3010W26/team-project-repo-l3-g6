@@ -1,0 +1,201 @@
+{
+  "_comment": "Cross edge insertion algorithms. White cross on U face. Each case describes the position/orientation of a white-face edge piece and the moves to insert it correctly. Cases are keyed by: target_slot (UF/UR/UB/UL), source_face (where the edge currently is), and orientation (0=correct, 1=flipped).",
+  "CROSS": {
+    "CROSS_SETUP": {
+      "_comment": "Before applying any case algorithm, AUF (Adjust U Face) rotations may be needed to align the target slot. U, U', U2 are used freely between insertions.",
+      "AUF": [
+        "U",
+        "U'",
+        "U2"
+      ]
+    },
+    "FROM_BOTTOM": {
+      "_comment": "Edge is in the D layer. These are the most common starting positions after a scramble.",
+      "DF_correct": {
+        "_comment": "Edge at DF, white facing down, target is UF",
+        "alg": [
+          "F2"
+        ]
+      },
+      "DF_flipped": {
+        "_comment": "Edge at DF, white facing front, target is UF",
+        "alg": [
+          "F",
+          "U",
+          "R",
+          "U'"
+        ]
+      },
+      "DR_correct": {
+        "_comment": "Edge at DR, white facing down, target is UR",
+        "alg": [
+          "R2"
+        ]
+      },
+      "DR_flipped": {
+        "_comment": "Edge at DR, white facing right, target is UR",
+        "alg": [
+          "R",
+          "U",
+          "B",
+          "U'"
+        ]
+      },
+      "DB_correct": {
+        "_comment": "Edge at DB, white facing down, target is UB",
+        "alg": [
+          "B2"
+        ]
+      },
+      "DB_flipped": {
+        "_comment": "Edge at DB, white facing back, target is UB",
+        "alg": [
+          "B",
+          "U",
+          "L",
+          "U'"
+        ]
+      },
+      "DL_correct": {
+        "_comment": "Edge at DL, white facing down, target is UL",
+        "alg": [
+          "L2"
+        ]
+      },
+      "DL_flipped": {
+        "_comment": "Edge at DL, white facing left, target is UL",
+        "alg": [
+          "L",
+          "U",
+          "F",
+          "U'"
+        ]
+      }
+    },
+    "FROM_MIDDLE": {
+      "_comment": "Edge is stuck in the E (middle) layer. Must be extracted before inserting.",
+      "FR_white_front": {
+        "_comment": "Edge at FR, white facing front, target is UF",
+        "alg": [
+          "R'",
+          "U",
+          "R"
+        ]
+      },
+      "FR_white_right": {
+        "_comment": "Edge at FR, white facing right, target is UF",
+        "alg": [
+          "F",
+          "U'",
+          "F'"
+        ]
+      },
+      "RB_white_right": {
+        "_comment": "Edge at RB, white facing right, target is UR",
+        "alg": [
+          "B'",
+          "U",
+          "B"
+        ]
+      },
+      "RB_white_back": {
+        "_comment": "Edge at RB, white facing back, target is UR",
+        "alg": [
+          "R",
+          "U'",
+          "R'"
+        ]
+      },
+      "BL_white_back": {
+        "_comment": "Edge at BL, white facing back, target is UB",
+        "alg": [
+          "L'",
+          "U",
+          "L"
+        ]
+      },
+      "BL_white_left": {
+        "_comment": "Edge at BL, white facing left, target is UB",
+        "alg": [
+          "B",
+          "U'",
+          "B'"
+        ]
+      },
+      "LF_white_left": {
+        "_comment": "Edge at LF, white facing left, target is UL",
+        "alg": [
+          "F'",
+          "U",
+          "F"
+        ]
+      },
+      "LF_white_front": {
+        "_comment": "Edge at LF, white facing front, target is UL",
+        "alg": [
+          "L",
+          "U'",
+          "L'"
+        ]
+      }
+    },
+    "FROM_TOP_FLIPPED": {
+      "_comment": "Edge reached U layer but is flipped (non-white facing up). Must be corrected.",
+      "UF_flipped": {
+        "_comment": "Edge at UF position but flipped",
+        "alg": [
+          "F2",
+          "D",
+          "R",
+          "F'",
+          "R'"
+        ]
+      },
+      "UR_flipped": {
+        "_comment": "Edge at UR position but flipped",
+        "alg": [
+          "R2",
+          "D",
+          "B",
+          "R'",
+          "B'"
+        ]
+      },
+      "UB_flipped": {
+        "_comment": "Edge at UB position but flipped",
+        "alg": [
+          "B2",
+          "D",
+          "L",
+          "B'",
+          "L'"
+        ]
+      },
+      "UL_flipped": {
+        "_comment": "Edge at UL position but flipped",
+        "alg": [
+          "L2",
+          "D",
+          "F",
+          "L'",
+          "F'"
+        ]
+      }
+    },
+    "DAISY_METHOD": {
+      "_comment": "Alternative: build a daisy on U (white stickers facing up on U layer edges), then flip each edge into place with F2/R2/B2/L2.",
+      "flip_UF_to_DF": [
+        "F2"
+      ],
+      "flip_UR_to_DR": [
+        "R2"
+      ],
+      "flip_UB_to_DB": [
+        "B2"
+      ],
+      "flip_UL_to_DL": [
+        "L2"
+      ]
+    }
+  }
+}
