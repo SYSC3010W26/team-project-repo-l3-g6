@@ -30,6 +30,7 @@ import copy
 import os
 
 from Cube_Algorithm import CubeAlgorithm
+from Cube_State import Cube
 from CFOP import CFOP_Tables
 
 
@@ -111,12 +112,9 @@ class CFOP_Algorithm(CubeAlgorithm):
         for slot in ["DF", "DR", "DB", "DL"]:
             alg = CFOP_Tables.solve_cross_edge(self._working, slot, solved_edges)
             if alg:
-                self._working = CFOP_Tables.apply_alg(self._working, alg)
+                self._working = CFOP_Tables._apply_std(self._working, alg)
                 self.moves.extend(alg)
             solved_edges.append(slot)
-
-    # ------------------------------------------------------------------
-    # Stage 2 – F2L
     # ------------------------------------------------------------------
 
     def solve_f2l(self, orientation_face=None):
@@ -154,19 +152,19 @@ class CFOP_Algorithm(CubeAlgorithm):
 
             if sig in lut:
                 alg = lut[sig]
-                self._working = CFOP_Tables.apply_alg(self._working, alg)
+                self._working = CFOP_Tables._apply_std(self._working, alg)
                 self.moves.extend(alg)
             else:
                 # Try AUF rotations to find a matching signature
                 found = False
                 for auf in [["U"], ["U'"], ["U2"]]:
-                    test     = CFOP_Tables.apply_alg(self._working, auf)
+                    test     = CFOP_Tables._apply_std(self._working, auf)
                     test_sig = CFOP_Tables.get_piece_signature(
                         test, corner_colours, edge_colours
                     )
                     if test_sig in lut:
                         full_alg      = auf + lut[test_sig]
-                        self._working = CFOP_Tables.apply_alg(self._working, full_alg)
+                        self._working = CFOP_Tables._apply_std(self._working, full_alg)
                         self.moves.extend(full_alg)
                         found = True
                         break
@@ -197,16 +195,16 @@ class CFOP_Algorithm(CubeAlgorithm):
         if pat in self._oll_lut:
             auf_moves, alg = self._oll_lut[pat]
             full          = auf_moves + alg
-            self._working = CFOP_Tables.apply_alg(self._working, full, self._all_moves)
+            self._working = CFOP_Tables._apply_ext(self._working, full, self._all_moves)
             self.moves.extend(full)
         else:
             for auf in [["U"], ["U'"], ["U2"]]:
-                test = CFOP_Tables.apply_alg(self._working, auf, self._all_moves)
+                test = CFOP_Tables._apply_ext(self._working, auf, self._all_moves)
                 pat  = CFOP_Tables.get_oll_pattern(test)
                 if pat in self._oll_lut:
                     auf_moves, alg = self._oll_lut[pat]
                     full          = auf + auf_moves + alg
-                    self._working = CFOP_Tables.apply_alg(
+                    self._working = CFOP_Tables._apply_ext(
                         self._working, full, self._all_moves
                     )
                     self.moves.extend(full)
@@ -227,41 +225,33 @@ class CFOP_Algorithm(CubeAlgorithm):
         """
         print("Solving PLL...")
 
-        pat = CFOP_Tables.get_pll_pattern(self._working)
+        pattern = CFOP_Tables.get_pll_pattern(self._working)
 
-        if pat in self._pll_lut:
-            auf_moves, alg = self._pll_lut[pat]
+        if pattern in self._pll_lut:
+            auf_moves, alg = self._pll_lut[pattern]
             full          = auf_moves + alg
-            self._working = CFOP_Tables.apply_alg(self._working, full, self._all_moves)
+            self._working = CFOP_Tables._apply_ext(self._working, full, self._all_moves)
             self.moves.extend(full)
         else:
             for auf in [["U"], ["U'"], ["U2"]]:
-                test = CFOP_Tables.apply_alg(self._working, auf, self._all_moves)
+                test = CFOP_Tables._apply_ext(self._working, auf, self._all_moves)
                 pat  = CFOP_Tables.get_pll_pattern(test)
                 if pat in self._pll_lut:
                     auf_moves, alg = self._pll_lut[pat]
                     full          = auf + auf_moves + alg
-                    self._working = CFOP_Tables.apply_alg(
+                    self._working = CFOP_Tables._apply_ext(
                         self._working, full, self._all_moves
                     )
                     self.moves.extend(full)
                     break
 
-        # Final AUF: rotate U layer until all faces show a uniform top row
+        # Final AUF: rotate U layer until all faces show a uniform top row.
+        # Delegate the solved check to Cube.is_solved() instead of reimplementing it.
         for auf in [["U"], ["U'"], ["U2"]]:
-            test = CFOP_Tables.apply_alg(self._working, auf, self._all_moves)
-            if self._is_solved(test):
+            test = CFOP_Tables._apply_ext(self._working, auf, self._all_moves)
+            check = Cube()
+            check.set_cube_state(test)
+            if check.is_solved():
                 self._working = test
                 self.moves.extend(auf)
                 return
-
-    # ------------------------------------------------------------------
-    # Internal utility
-    # ------------------------------------------------------------------
-
-    def _is_solved(self, state):
-        """Return True if every face of the cube shows a single uniform colour."""
-        for face_start in range(0, 54, 9):
-            if len(set(state[face_start:face_start + 9])) != 1:
-                return False
-        return True

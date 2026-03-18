@@ -70,8 +70,6 @@ def apply_move(cube, perm):
     """
     return [cube[perm[i]] for i in range(54)]
 
-
-
 # Base Move Definitions
 
 # Each move is built from identity and modified only where needed.
@@ -172,9 +170,7 @@ B[35], B[34], B[33]  = 42, 39, 36
 B[11], B[14], B[17]  = 35, 34, 33
 
 
-
-
-# Generate All Moves
+# Generate All face type Moves
 
 MOVES = {}
 
@@ -191,19 +187,4 @@ for name, perm in base_moves.items():
     MOVES[name] = perm
     MOVES[name + "2"] = compose_perm(perm, perm)
     MOVES[name + "'"] = invert_perm(perm)
-
-
-
-# Utility Functions
-
-def apply_move_sequence(cube, move_list):
-    """
-    Apply a sequence of moves.
-
-    cube: 54-element list |
-    move_list: ["R", "U", "R'", "U'"]
-    """
-    for move in move_list:
-        cube = apply_move(cube, MOVES[move])
-    return cube
-
+    

@@ -14,7 +14,8 @@ Purpose:
         AlgorithmTable       - thin JSON loader kept for backward compatibility
         build_extra_moves()  - extended move permutations (r, f, M, x, y …)
         Cube index constants - CORNER_INDICES, EDGE_INDICES, ALL18, SAFE15
-        apply_alg()          - apply a move sequence to a cube state
+        _apply_std()         - apply standard moves via Cube.apply_sequence()
+        _apply_ext()         - apply extended moves (wide/slice/rotation) via Permutation_Table
         invert_alg()         - reverse a move sequence
 
         Cross stage:
@@ -44,6 +45,7 @@ Orientation Convention:
 import json
 from collections import deque
 
+from Cube_State import Cube
 import Permutation_Table
 
 class AlgorithmTable:
@@ -201,22 +203,37 @@ SAFE15 = [m for m in ALL18 if not m.startswith("D")]
 # Generic move helpers
 # ===========================================================================
 
-def apply_alg(state, alg, move_map=None):
+def _apply_std(state, alg):
     """
-    Apply a sequence of move strings to a cube state list.
+    Apply a sequence of standard face moves (U/R/F/D/L/B and variants) to a
+    cube state list using Cube.apply_sequence().
 
-    state    - list of 54 sticker strings
-    alg      - list of move strings, e.g. ["R", "U", "R'"]
-    move_map - dict of move-name → permutation list; defaults to
-               Permutation_Table.MOVES (standard 18 face moves only)
+    state - list of 54 sticker strings
+    alg   - list of move strings drawn from the 18 standard moves
 
     Returns a new state list; the input is not modified.
     """
-    s     = state[:]
-    table = move_map if move_map is not None else Permutation_Table.MOVES
+    c = Cube()
+    c.set_cube_state(state[:])
+    c.apply_sequence(alg)
+    return c.state
+
+
+def _apply_ext(state, alg, move_map):
+    """
+    Apply a sequence of extended moves (wide moves, slice moves, cube rotations)
+    to a cube state list using Permutation_Table.apply_move() directly.
+
+    state    - list of 54 sticker strings
+    alg      - list of move strings (may include r, f, M, x, y and their variants)
+    move_map - dict of move-name → permutation list (from build_extra_moves())
+
+    Returns a new state list; the input is not modified.
+    """
+    s = state[:]
     for m in alg:
-        if m in table:
-            s = Permutation_Table.apply_move(s, table[m])
+        if m in move_map:
+            s = Permutation_Table.apply_move(s, move_map[m])
     return s
 
 
@@ -315,18 +332,18 @@ def solve_cross_edge(state, slot, already_solved):
         if len(moves) >= 9:
             continue
         for move in ALL18:
-            ns = tuple(Permutation_Table.apply_move(list(current), Permutation_Table.MOVES[move]))
-            if ns in visited:
+            newstate = tuple(Permutation_Table.apply_move(list(current), Permutation_Table.MOVES[move]))
+            if newstate in visited:
                 continue
-            nm  = moves + [move]
-            nsl = list(ns)
-            if cross_edge_solved(nsl, slot) and all(
-                cross_edge_solved(nsl, s) for s in already_solved
+            newmove  = moves + [move]
+            newstatelist = list(newstate)
+            if cross_edge_solved(newstatelist, slot) and all(
+                cross_edge_solved(newstatelist, s) for s in already_solved
             ):
-                return nm
-            if len(nm) < 9:
-                visited.add(ns)
-                queue.append((ns, nm))
+                return newmove  
+            if len(newmove) < 9:
+                visited.add(newstate)
+                queue.append((newstate, newmove))
 
     return []
 
@@ -396,14 +413,14 @@ def _generate_safe_composites(solved, preserve_slots, max_len=3):
     for length in range(1, max_len + 1):
         if length == 1:
             for m in SAFE15:
-                t = apply_alg(solved, [m])
+                t = _apply_std(solved, [m])
                 if d_cross_ok(t) and all(F2L_SLOT_SOLVED[sl](t) for sl in preserve_slots):
                     safe.append([m])
 
         elif length == 2:
             for m1 in SAFE15:
                 for m2 in SAFE15:
-                    t = apply_alg(solved, [m1, m2])
+                    t = _apply_std(solved, [m1, m2])
                     if d_cross_ok(t) and all(F2L_SLOT_SOLVED[sl](t) for sl in preserve_slots):
                         safe.append([m1, m2])
 
@@ -411,7 +428,7 @@ def _generate_safe_composites(solved, preserve_slots, max_len=3):
             for m1 in SAFE15:
                 for m2 in SAFE15:
                     for m3 in SAFE15:
-                        t = apply_alg(solved, [m1, m2, m3])
+                        t = _apply_std(solved, [m1, m2, m3])
                         if d_cross_ok(t) and all(F2L_SLOT_SOLVED[sl](t) for sl in preserve_slots):
                             safe.append([m1, m2, m3])
 
@@ -440,10 +457,7 @@ def build_f2l_table(slot, corner_colours, edge_colours,
 
     Returns a dict: signature_tuple → list of move strings
     """
-    solved = (
-        ["U"] * 9 + ["R"] * 9 + ["F"] * 9 +
-        ["D"] * 9 + ["L"] * 9 + ["B"] * 9
-    )
+    solved = Cube().state
     slot_done  = F2L_SLOT_SOLVED[slot]
     sig_fn     = lambda s: get_piece_signature(s, corner_colours, edge_colours)
     composites = _generate_safe_composites(solved, preserve_slots, max_len=3)
@@ -458,7 +472,7 @@ def build_f2l_table(slot, corner_colours, edge_colours,
         if len(backward_path) >= max_depth:
             continue
         for seq in composites:
-            ns = apply_alg(current, seq)
+            ns = _apply_std(current, seq)
             if not d_cross_ok(ns):
                 continue
             if not all(F2L_SLOT_SOLVED[sl](ns) for sl in preserve_slots):
@@ -515,10 +529,7 @@ def build_oll_lookup(json_path, all_moves):
     Returns a dict: tuple(int, ...) → (list[str], list[str])
     Returns an empty dict if the file cannot be read.
     """
-    solved = (
-        ["U"] * 9 + ["R"] * 9 + ["F"] * 9 +
-        ["D"] * 9 + ["L"] * 9 + ["B"] * 9
-    )
+    solved = Cube().state
     try:
         with open(json_path) as fh:
             oll_data = json.load(fh).get("OLL", {})
@@ -532,9 +543,9 @@ def build_oll_lookup(json_path, all_moves):
         if not alg:
             continue
         inv   = invert_alg(alg)
-        setup = apply_alg(solved, inv, all_moves)
+        setup = _apply_ext(solved, inv, all_moves)
         for auf in auf_list:
-            test = apply_alg(setup, auf, all_moves)
+            test = _apply_ext(setup, auf, all_moves)
             pat  = get_oll_pattern(test)
             if pat not in lut:
                 lut[pat] = (list(auf), alg)
@@ -572,10 +583,7 @@ def build_pll_lookup(json_path, all_moves):
     Returns a dict: tuple(str, ...) → (list[str], list[str])
     Returns an empty dict if the file cannot be read.
     """
-    solved = (
-        ["U"] * 9 + ["R"] * 9 + ["F"] * 9 +
-        ["D"] * 9 + ["L"] * 9 + ["B"] * 9
-    )
+    solved = Cube().state
     try:
         with open(json_path) as fh:
             pll_data = json.load(fh).get("PLL", {})
@@ -589,9 +597,9 @@ def build_pll_lookup(json_path, all_moves):
         if not alg:
             continue
         inv   = invert_alg(alg)
-        setup = apply_alg(solved, inv, all_moves)
+        setup = _apply_ext(solved, inv, all_moves)
         for auf in auf_list:
-            test = apply_alg(setup, auf, all_moves)
+            test = _apply_ext(setup, auf, all_moves)
             pat  = get_pll_pattern(test)
             if pat not in lut:
                 lut[pat] = (list(auf), alg)
