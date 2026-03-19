@@ -1,0 +1,100 @@
+@startuml Sequence_diagram.puml
+title Rubik's Cube Solver - Sequence Diagram - Detailed Use Case
+
+actor User
+participant GUI
+participant "DB + Backend" as DB
+participant Scanner
+participant Solver
+participant "Motor Controller" as Motor
+
+' -----------------------------
+' Initialization Section
+' -----------------------------
+== Solve Process Initialization ==
+
+User -> GUI : Insert Cube
+User -> GUI : Start Scan Pressed
+GUI -> DB : START_SCAN()
+
+DB -> Scanner : START_SCAN()
+Scanner --> DB : SCAN_RESULT
+
+' -----------------------------
+' Validate Cube Section
+' -----------------------------
+== Validate Cube ==
+
+DB -> Solver : VALIDATE_CUBE(CUBE_STATE)
+Solver --> DB : VALIDATION_RESULT
+
+alt Cube Invalid
+    DB -> GUI : DISPLAY_ERROR("Invalid Cube State")
+    GUI --> User : Notify Invalid Cube
+else Cube Valid
+    DB -> GUI : DISPLAY_VALIDATION_SUCCESS()
+end
+
+' -----------------------------
+' Algorithm Selection Section
+' -----------------------------
+== Algorithm Selection ==
+
+User -> GUI : Select Solving Algorithm
+GUI -> DB : SET_ALGORITHM(algorithm_type)
+
+DB -> Solver : CONFIGURE_ALGORITHM(algorithm_type)
+Solver --> DB : ALGORITHM_READY
+
+' -----------------------------
+' Solving Phase (Generate Moves Only)
+' -----------------------------
+== Generate Solution ==
+
+DB -> Solver : SOLVE(CUBE_STATE)
+note right of Solver
+Solving Scramble
+end note
+
+Solver --> DB : SOLUTION_DETAILS
+
+' ---- NEW USER PROMPT SECTION ----
+DB -> GUI : DISPLAY_SOLUTION_SUMMARY()
+GUI --> User : Prompt "Start Solve?"
+
+alt User Cancels
+    GUI -> DB : CANCEL_SOLVE()
+    DB -> GUI : DISPLAY_CANCELLED()
+else User Confirms
+    User -> GUI : Confirm Start Solve
+    GUI -> DB : START_SOLVE()
+end
+
+' -----------------------------
+' Execute Moves
+' -----------------------------
+== Execute Moves ==
+
+DB -> Motor : MOVE_LIST
+
+loop For i in MOVE_LIST
+    Motor -> Motor : do_move()
+end
+
+Motor --> DB : SOLVE_STATS
+
+' -----------------------------
+' Verification Phase
+' -----------------------------
+== Verification Phase ==
+
+DB -> Scanner : START_SCAN()
+Scanner --> DB : SCAN_RESULT
+
+DB -> Solver : VERIFY_SOLUTION(CUBE_STATE)
+Solver --> DB : SOLVE_VERIFIED
+
+DB -> GUI : DISPLAY_SOLVE_STATS()
+GUI --> User : Notify User with Result
+
+@enduml
