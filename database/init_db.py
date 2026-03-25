@@ -18,17 +18,12 @@ import sqlite3
 from pathlib import Path
 from dotenv import load_dotenv
 
+from database.db import get_db
+
 load_dotenv()
 
 DB_PATH = os.getenv("DATABASE_URL", "./rubiks.db")
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
-
-
-def get_connection(db_path: str) -> sqlite3.Connection:
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
 
 
 def create_tables(conn: sqlite3.Connection) -> None:
@@ -66,7 +61,7 @@ def seed_default_user(conn: sqlite3.Connection) -> None:
 
 def main() -> None:
     print(f"[init_db] Using database: {DB_PATH}")
-    conn = get_connection(DB_PATH)
+    conn = get_db()
     try:
         print("[init_db] Creating tables...")
         create_tables(conn)
