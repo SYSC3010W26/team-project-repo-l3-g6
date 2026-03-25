@@ -15,6 +15,9 @@ pydantic
 # Load .env files for DATABASE_URL and other config
 python-dotenv
 
+# Testing
+pytest
+
 # ============================================================
 # Production (Supabase / PostgreSQL) — uncomment on Rpi4
 # ============================================================
