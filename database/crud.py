@@ -18,6 +18,12 @@ from .models import (
     SolutionCreate,
     SystemLogCreate,
     NodeStatusUpsert,
+    ScanFaceCreate,
+    SolutionStepCreate,
+    ExecutionRunCreate,
+    MotorExecutionLogCreate,
+    VerificationResultCreate,
+    UserCreate,
 )
 
 
@@ -114,6 +120,39 @@ def get_cube_states_by_session(conn: sqlite3.Connection, session_id: int) -> lis
 
 
 # ---------------------------------------------------------------------------
+# scan_faces
+# ---------------------------------------------------------------------------
+
+def create_scan_face(conn: sqlite3.Connection, data: ScanFaceCreate) -> int:
+    """Insert a face scan record; returns the new row id."""
+    cursor = conn.execute(
+        """
+        INSERT INTO scan_faces
+            (session_id, face_name, face_string, confidence, captured_by, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            data.session_id,
+            data.face_name,
+            data.face_string,
+            data.confidence,
+            data.captured_by,
+            _now(),
+        ),
+    )
+    return cursor.lastrowid
+
+
+def get_scan_faces_by_session(conn: sqlite3.Connection, session_id: int) -> list[dict]:
+    """Return all face scan rows for a given session."""
+    rows = conn.execute(
+        "SELECT * FROM scan_faces WHERE session_id = ? ORDER BY created_at",
+        (session_id,),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+# ---------------------------------------------------------------------------
 # solutions
 # ---------------------------------------------------------------------------
 
@@ -143,6 +182,41 @@ def get_solutions_by_session(conn: sqlite3.Connection, session_id: int) -> list[
     rows = conn.execute(
         "SELECT * FROM solutions WHERE session_id = ? ORDER BY generated_at",
         (session_id,),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# solution_steps
+# ---------------------------------------------------------------------------
+
+def create_solution_step(conn: sqlite3.Connection, data: SolutionStepCreate) -> int:
+    """Insert a solution step; returns the new row id."""
+    cursor = conn.execute(
+        """
+        INSERT INTO solution_steps
+            (solution_id, step_index, face, direction, degrees, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            data.solution_id,
+            data.step_index,
+            data.face,
+            data.direction,
+            data.degrees,
+            _now(),
+        ),
+    )
+    return cursor.lastrowid
+
+
+def get_solution_steps_by_solution(
+    conn: sqlite3.Connection, solution_id: int
+) -> list[dict]:
+    """Return all steps for a solution, ordered by step_index (not created_at)."""
+    rows = conn.execute(
+        "SELECT * FROM solution_steps WHERE solution_id = ? ORDER BY step_index",
+        (solution_id,),
     ).fetchall()
     return [dict(r) for r in rows]
 
@@ -199,3 +273,35 @@ def upsert_heartbeat(conn: sqlite3.Connection, data: NodeStatusUpsert) -> None:
             data.last_message,
         ),
     )
+
+
+def get_all_nodes(conn: sqlite3.Connection) -> list[dict]:
+    """Return all node status rows. Used by heartbeat monitor to detect stale nodes."""
+    rows = conn.execute(
+        "SELECT * FROM node_status ORDER BY node_id"
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# users
+# ---------------------------------------------------------------------------
+
+def create_user(conn: sqlite3.Connection, data: UserCreate) -> int:
+    """Insert a new user; returns the new row id."""
+    cursor = conn.execute(
+        """
+        INSERT INTO users (username, role, created_at)
+        VALUES (?, ?, ?)
+        """,
+        (data.username, data.role, _now()),
+    )
+    return cursor.lastrowid
+
+
+def get_user_by_id(conn: sqlite3.Connection, user_id: int) -> Optional[dict]:
+    """Return a user row as a dict, or None if not found."""
+    row = conn.execute(
+        "SELECT * FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
+    return _row_to_dict(row) if row else None
