@@ -222,6 +222,133 @@ def get_solution_steps_by_solution(
 
 
 # ---------------------------------------------------------------------------
+# execution_runs
+# ---------------------------------------------------------------------------
+
+def create_execution_run(conn: sqlite3.Connection, data: ExecutionRunCreate) -> int:
+    """Insert an execution run; returns the new row id."""
+    cursor = conn.execute(
+        """
+        INSERT INTO execution_runs
+            (session_id, solution_id, status, started_at, motor_node_id)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            data.session_id,
+            data.solution_id,
+            data.status,
+            _now(),
+            data.motor_node_id,
+        ),
+    )
+    return cursor.lastrowid
+
+
+def get_execution_runs_by_session(
+    conn: sqlite3.Connection, session_id: int
+) -> list[dict]:
+    """Return all execution runs for a given session."""
+    rows = conn.execute(
+        "SELECT * FROM execution_runs WHERE session_id = ? ORDER BY started_at",
+        (session_id,),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def update_execution_run_status(
+    conn: sqlite3.Connection,
+    run_id: int,
+    status: str,
+    completed_at: Optional[str] = None,
+) -> None:
+    """Update the status of an execution run. Auto-sets completed_at for terminal states."""
+    if completed_at is None and status in ("completed", "failed", "cancelled"):
+        completed_at = _now()
+    conn.execute(
+        "UPDATE execution_runs SET status = ?, completed_at = ? WHERE id = ?",
+        (status, completed_at, run_id),
+    )
+
+
+# ---------------------------------------------------------------------------
+# motor_execution_log
+# ---------------------------------------------------------------------------
+
+def create_motor_log(
+    conn: sqlite3.Connection, data: MotorExecutionLogCreate
+) -> int:
+    """Insert a motor execution log entry; returns the new row id."""
+    cursor = conn.execute(
+        """
+        INSERT INTO motor_execution_log
+            (run_id, step_index, commanded_face, commanded_dir,
+             commanded_deg, status, error_code, error_message, ts)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            data.run_id,
+            data.step_index,
+            data.commanded_face,
+            data.commanded_dir,
+            data.commanded_deg,
+            data.status,
+            data.error_code,
+            data.error_message,
+            _now(),  # ts column
+        ),
+    )
+    return cursor.lastrowid
+
+
+def get_motor_logs_by_run(conn: sqlite3.Connection, run_id: int) -> list[dict]:
+    """Return all motor log entries for a given execution run."""
+    rows = conn.execute(
+        "SELECT * FROM motor_execution_log WHERE run_id = ? ORDER BY step_index",
+        (run_id,),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# verification_results
+# ---------------------------------------------------------------------------
+
+def create_verification_result(
+    conn: sqlite3.Connection, data: VerificationResultCreate
+) -> int:
+    """Insert a verification result; returns the new row id."""
+    cursor = conn.execute(
+        """
+        INSERT INTO verification_results
+            (session_id, run_id, verified, final_state_string,
+             method, notes, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            data.session_id,
+            data.run_id,
+            data.verified,
+            data.final_state_string,
+            data.method,
+            data.notes,
+            _now(),
+        ),
+    )
+    return cursor.lastrowid
+
+
+def get_verification_results_by_session(
+    conn: sqlite3.Connection, session_id: int
+) -> list[dict]:
+    """Return all verification results for a given session."""
+    rows = conn.execute(
+        "SELECT * FROM verification_results WHERE session_id = ? ORDER BY created_at",
+        (session_id,),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+# ---------------------------------------------------------------------------
 # system_logs
 # ---------------------------------------------------------------------------
 
