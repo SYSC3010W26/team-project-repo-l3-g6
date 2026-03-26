@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to plan
-last_updated: "2026-03-26T16:20:46.965Z"
+last_updated: "2026-03-26T16:19:20.648Z"
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 2
+  total_plans: 7
+  completed_plans: 7
 ---
 
 # Project State
@@ -18,12 +18,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** A scrambled cube placed in the robot comes out solved, with the full pipeline running end-to-end without manual intervention.
-**Current focus:** Phase 03 — job-state-machine
+**Current focus:** Phase 02 — fastapi-backend
 
 ## Current Position
 
 Phase: 3
-Plan: 1 complete
+Plan: Not started
 
 ## Subsystem Scope
 
@@ -78,8 +78,7 @@ Do not modify: `solver/`, `motorctl/`, `EndToEndDemo/`, `UnitTests/Scanner/`
 - [Phase 02-03]: socket_handlers.py imports sio from main.py and is imported by main.py after ASGI composition to avoid circular import
 - [Phase 02-gap-01]: sio singleton extracted to backend/sio_instance.py to break circular import between main.py and execute.py
 - [Phase 02-gap-01]: check_same_thread=False added to sqlite3.connect for async def route cross-thread compatibility
-- [Phase 03-job-state-machine]: JobStateMachine is stateless — reads current status from DB on each call; pending status allowed to transition to scanning
-- [Phase 03-job-state-machine]: test_all_11_tables_created updated to test_all_12_tables_created after adding job_control table
+- [Phase 03-job-state-machine]: heartbeat_monitor uses asyncio background task with 2s poll and 5s dead threshold; job_state.py created as Rule 3 blocking fix for parallel execution dependency
 
 ## Session Notes
 
@@ -89,4 +88,3 @@ Do not modify: `solver/`, `motorctl/`, `EndToEndDemo/`, `UnitTests/Scanner/`
 - 2026-03-25: Executed 01-03-PLAN.md. Created test_crud.py with 18 test functions covering all 11 tables. Full suite 22/22 passing. Phase 01 complete. Stopped at: Completed 01-database-foundation/01-03-PLAN.md.
 - 2026-03-26: Executed 02-03-PLAN.md. Created socket_handlers.py with 6 Socket.IO handlers for Motor Pi events. Created backend/tests/conftest.py and test_integration.py with 7 tests. Full suite 29/29 passing. Phase 02 complete. Stopped at: Completed 02-fastapi-backend/02-03-PLAN.md.
 - 2026-03-26: Executed 02-gap-01-PLAN.md. Added sio.emit('execution_progress') to execute.py, extracted sio to sio_instance.py to fix circular import, added check_same_thread=False. Full suite 30/30 passing. API-03 fully satisfied. Stopped at: Completed 02-fastapi-backend/02-gap-01-PLAN.md.
-- 2026-03-26: Executed 03-01-PLAN.md. Added job_control table to schema/models/crud. Created backend/job_state.py with JobStateMachine enforcing pipeline ordering with pre-transition guards. Added 4 REST endpoints (transition, control POST/GET, ack). Updated schema test for 12 tables. All 30 tests pass. Stopped at: Completed 03-job-state-machine/03-01-PLAN.md.
