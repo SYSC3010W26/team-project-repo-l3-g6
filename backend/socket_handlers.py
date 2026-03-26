@@ -20,7 +20,7 @@ Server broadcasts to frontend (D-04):
 
 from datetime import datetime, timezone
 
-from backend.main import sio
+from backend.sio_instance import sio
 from database.db import db_session
 from database import crud
 from database.models import SystemLogCreate, NodeStatusUpsert

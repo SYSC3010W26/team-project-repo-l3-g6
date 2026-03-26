@@ -19,6 +19,7 @@ import socketio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.sio_instance import sio
 from backend.routers import jobs, scan, solve, execute, nodes, logs
 
 # ---------------------------------------------------------------------------
@@ -33,12 +34,6 @@ fastapi_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# ---------------------------------------------------------------------------
-# Socket.IO AsyncServer (shared port via ASGI composition)
-# ---------------------------------------------------------------------------
-
-sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 
 # ---------------------------------------------------------------------------
 # ASGI composition — sio wraps fastapi_app so both share port 8000

@@ -165,3 +165,55 @@ def test_logs_endpoint(client):
     r = client.get("/logs")
     assert r.status_code == 200
     assert isinstance(r.json(), list)
+
+
+def test_execution_progress_broadcast(client):
+    """POST /execute/progress emits execution_progress Socket.IO event per D-04."""
+    from unittest.mock import AsyncMock, patch
+
+    # Build precondition: session + scan + solution + run
+    session_id = client.post("/jobs/start", json={}).json()["session_id"]
+    client.post(
+        "/scan/submit",
+        json={"session_id": session_id, "state_string": "U" * 54, "is_valid": True},
+    )
+    solution_id = client.post(
+        "/solve/submit",
+        json={
+            "session_id": session_id,
+            "algorithm_used": "CFOP",
+            "move_count": 4,
+            "solution_string": "R U R' U'",
+        },
+    ).json()["solution_id"]
+    run_id = client.post(
+        "/execute/start",
+        json={"session_id": session_id, "solution_id": solution_id},
+    ).json()["run_id"]
+
+    # Patch sio on the execute router module, then call progress
+    with patch("backend.routers.execute.sio") as mock_sio:
+        mock_sio.emit = AsyncMock()
+        r = client.post(
+            "/execute/progress",
+            json={
+                "session_id": session_id,
+                "run_id": run_id,
+                "current_step": 1,
+                "total_steps": 4,
+                "move": "R",
+            },
+        )
+        assert r.status_code == 200
+
+        mock_sio.emit.assert_called_once_with(
+            "execution_progress",
+            {
+                "session_id": session_id,
+                "run_id": run_id,
+                "current_step": 1,
+                "total_steps": 4,
+                "move": "R",
+                "pct_complete": 25.0,
+            },
+        )
