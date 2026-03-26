@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to plan
-last_updated: "2026-03-26T01:35:15.119Z"
+last_updated: "2026-03-26T16:19:20.648Z"
 progress:
   total_phases: 5
   completed_phases: 2
@@ -78,6 +78,7 @@ Do not modify: `solver/`, `motorctl/`, `EndToEndDemo/`, `UnitTests/Scanner/`
 - [Phase 02-03]: socket_handlers.py imports sio from main.py and is imported by main.py after ASGI composition to avoid circular import
 - [Phase 02-gap-01]: sio singleton extracted to backend/sio_instance.py to break circular import between main.py and execute.py
 - [Phase 02-gap-01]: check_same_thread=False added to sqlite3.connect for async def route cross-thread compatibility
+- [Phase 03-job-state-machine]: heartbeat_monitor uses asyncio background task with 2s poll and 5s dead threshold; job_state.py created as Rule 3 blocking fix for parallel execution dependency
 
 ## Session Notes
 
