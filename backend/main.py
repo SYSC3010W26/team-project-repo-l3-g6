@@ -64,3 +64,6 @@ fastapi_app.include_router(solve.router, prefix="/solve", tags=["solve"])
 fastapi_app.include_router(execute.router, prefix="/execute", tags=["execute"])
 fastapi_app.include_router(nodes.router, prefix="/nodes", tags=["nodes"])
 fastapi_app.include_router(logs.router, prefix="/logs", tags=["logs"])
+
+# Register Socket.IO event handlers (must import after sio is created)
+import backend.socket_handlers  # noqa: F401, E402
