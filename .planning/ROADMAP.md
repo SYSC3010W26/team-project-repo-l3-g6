@@ -56,8 +56,8 @@ Plans:
 
 Plans:
 - [x] 03-01: State machine (Idle, Scanning, Solving, Executing, Done/Error) with enforced transitions
-- [ ] 03-02: Heartbeat monitor background task
-- [ ] 03-03: Control flags and state machine unit tests
+- [x] 03-02: Heartbeat monitor background task
+- [x] 03-03: Control flags and state machine unit tests
 
 ### Phase 4: Web Dashboard (Core Pages)
 **Goal**: All 5 dashboard pages are functional, accessible from phone/computer on LAN, and connected to live data via WebSocket.
