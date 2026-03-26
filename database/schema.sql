@@ -126,3 +126,13 @@ CREATE TABLE IF NOT EXISTS system_logs (
     metadata    TEXT,
     created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- GUI and system control flags for pipeline actions
+CREATE TABLE IF NOT EXISTS job_control (
+    id          INTEGER     PRIMARY KEY AUTOINCREMENT,
+    session_id  INTEGER     NOT NULL REFERENCES solve_sessions(id),
+    action      VARCHAR     NOT NULL,
+    issued_by   VARCHAR     NOT NULL,
+    issued_at   TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status      VARCHAR     NOT NULL DEFAULT 'pending'
+);

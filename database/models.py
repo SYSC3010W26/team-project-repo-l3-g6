@@ -245,3 +245,19 @@ class SystemLog(SystemLogBase):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------------------------
+# job_control
+# ---------------------------------------------------------------------------
+
+class JobControlCreate(BaseModel):
+    session_id: int
+    action: str          # start | stop | reset | rescan
+    issued_by: str       # gui | system
+    issued_at: Optional[str] = None
+    status: str = "pending"
+
+class JobControl(JobControlCreate):
+    id: int
+    model_config = {"from_attributes": True}
