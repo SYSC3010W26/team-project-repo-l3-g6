@@ -15,12 +15,14 @@ Entry point for uvicorn:
 - `sio`         — socketio.AsyncServer (Socket.IO event handlers attach here)
 ============================================================
 """
+import asyncio
 import socketio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.sio_instance import sio
 from backend.routers import jobs, scan, solve, execute, nodes, logs
+from backend.heartbeat import heartbeat_monitor
 
 # ---------------------------------------------------------------------------
 # FastAPI app
@@ -34,6 +36,15 @@ fastapi_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ---------------------------------------------------------------------------
+# Background tasks — started when FastAPI boots
+# ---------------------------------------------------------------------------
+
+@fastapi_app.on_event("startup")
+async def startup_event():
+    """Start background tasks on server boot (D-08)."""
+    asyncio.create_task(heartbeat_monitor())
 
 # ---------------------------------------------------------------------------
 # ASGI composition — sio wraps fastapi_app so both share port 8000
