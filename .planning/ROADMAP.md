@@ -71,7 +71,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: React/Vue app scaffold and Dashboard page (pipeline stage, node health, control buttons)
+- [ ] 04-01: React app scaffold and Dashboard page (pipeline stage, node health, control buttons)
 - [ ] 04-02: Solve Results and Solution Review pages
 - [ ] 04-03: Execution Monitor and System Logs pages
 
