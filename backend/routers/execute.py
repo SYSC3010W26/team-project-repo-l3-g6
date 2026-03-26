@@ -14,6 +14,7 @@ from database import crud
 from database.models import ExecutionRunCreate, MotorExecutionLogCreate
 from backend.deps import get_db_dep
 from backend import schemas
+from backend.main import sio
 
 router = APIRouter()
 
@@ -40,7 +41,7 @@ def start_execution(body: schemas.ExecuteStartRequest, conn: sqlite3.Connection 
 
 
 @router.post("/progress", response_model=schemas.MessageResponse)
-def report_progress(body: schemas.ExecuteProgressRequest, conn: sqlite3.Connection = Depends(get_db_dep)):
+async def report_progress(body: schemas.ExecuteProgressRequest, conn: sqlite3.Connection = Depends(get_db_dep)):
     data = MotorExecutionLogCreate(
         run_id=body.run_id,
         step_index=body.current_step,
@@ -50,6 +51,15 @@ def report_progress(body: schemas.ExecuteProgressRequest, conn: sqlite3.Connecti
         status="completed",
     )
     crud.create_motor_log(conn, data)
+    pct = round(body.current_step / body.total_steps * 100, 1) if body.total_steps else 0.0
+    await sio.emit("execution_progress", {
+        "session_id": body.session_id,
+        "run_id": body.run_id,
+        "current_step": body.current_step,
+        "total_steps": body.total_steps,
+        "move": body.move,
+        "pct_complete": pct,
+    })
     return schemas.MessageResponse(message="Progress recorded")
 
 
