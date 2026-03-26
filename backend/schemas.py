@@ -150,3 +150,39 @@ class LogEntryResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+# ---------------------------------------------------------------------------
+# Job State Machine
+# ---------------------------------------------------------------------------
+
+class JobTransitionRequest(BaseModel):
+    to: str  # idle | scanning | solving | executing | done | error
+
+
+class JobTransitionResponse(BaseModel):
+    session_id: int
+    previous_status: str
+    new_status: str
+
+
+# ---------------------------------------------------------------------------
+# Control Flags
+# ---------------------------------------------------------------------------
+
+class ControlFlagRequest(BaseModel):
+    action: str           # start | stop | reset | rescan
+    issued_by: str = "gui"
+
+
+class ControlFlagResponse(BaseModel):
+    control_id: int
+    session_id: int
+    action: str
+    issued_by: str
+    issued_at: str
+    status: str
+
+
+class ControlAckRequest(BaseModel):
+    control_id: int

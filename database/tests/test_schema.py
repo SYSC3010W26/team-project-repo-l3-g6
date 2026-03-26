@@ -1,7 +1,7 @@
 """
 ============================================================
 SYSC3010 L3-G6 — Schema Verification Tests
-Verifies all 11 tables are created correctly, FK enforcement
+Verifies all 12 tables are created correctly, FK enforcement
 is active, and key columns exist on critical tables.
 ============================================================
 """
@@ -15,8 +15,8 @@ import pytest
 # Test: All 11 tables are created
 # ---------------------------------------------------------------------------
 
-def test_all_11_tables_created(conn):
-    """All 11 expected tables must exist after create_tables()."""
+def test_all_12_tables_created(conn):
+    """All 12 expected tables must exist after create_tables()."""
     rows = conn.execute(
         "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
     ).fetchall()
@@ -25,6 +25,7 @@ def test_all_11_tables_created(conn):
     expected_tables = {
         "cube_states",
         "execution_runs",
+        "job_control",
         "motor_execution_log",
         "node_status",
         "scan_faces",
