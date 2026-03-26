@@ -18,6 +18,12 @@ python-dotenv
 # Testing
 pytest
 
+# Real-time Socket.IO server (ASGI mount with FastAPI)
+python-socketio
+
+# Async HTTP client (required by FastAPI TestClient)
+httpx
+
 # ============================================================
 # Production (Supabase / PostgreSQL) — uncomment on Rpi4
 # ============================================================
