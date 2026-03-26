@@ -30,3 +30,9 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude / AI tools
+.claude/
+CLAUDE.md
+.cursorrules
+.cursorignore
