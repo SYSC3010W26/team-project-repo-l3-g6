@@ -14,7 +14,7 @@ from database import crud
 from database.models import ExecutionRunCreate, MotorExecutionLogCreate
 from backend.deps import get_db_dep
 from backend import schemas
-from backend.main import sio
+from backend.sio_instance import sio
 
 router = APIRouter()
 
