@@ -1,0 +1,152 @@
+"""
+============================================================
+SYSC3010 L3-G6 — Backend API Schemas (Pydantic v2)
+Done By : Saim Hashmi
+
+Lean request/response models for every REST endpoint.
+These are API-contract models — separate from database/models.py per D-02.
+Each model defines only the fields the endpoint needs, not the full DB row.
+============================================================
+"""
+from typing import Optional
+from pydantic import BaseModel
+
+
+# ---------------------------------------------------------------------------
+# Jobs
+# ---------------------------------------------------------------------------
+
+class JobStartRequest(BaseModel):
+    algorithm: str = "CFOP"
+    session_name: Optional[str] = None
+
+
+class JobStartResponse(BaseModel):
+    session_id: int
+
+
+class JobStateResponse(BaseModel):
+    session_id: int
+    status: str
+    started_at: str
+    completed_at: Optional[str] = None
+    selected_algorithm: str
+
+
+# ---------------------------------------------------------------------------
+# Scan
+# ---------------------------------------------------------------------------
+
+class ScanSubmitRequest(BaseModel):
+    session_id: int
+    state_string: str
+    is_valid: bool
+    confidence: Optional[float] = None
+
+
+class ScanSubmitResponse(BaseModel):
+    cube_state_id: int
+
+
+class ScanResultResponse(BaseModel):
+    session_id: int
+    state_string: str
+    is_valid: bool
+    confidence: Optional[float] = None
+    created_at: str
+
+
+# ---------------------------------------------------------------------------
+# Solve
+# ---------------------------------------------------------------------------
+
+class SolveSubmitRequest(BaseModel):
+    session_id: int
+    algorithm_used: str
+    move_count: int
+    solution_string: str
+
+
+class SolveSubmitResponse(BaseModel):
+    solution_id: int
+
+
+class SolveResultResponse(BaseModel):
+    session_id: int
+    solution_id: int
+    algorithm_used: str
+    move_count: int
+    solution_string: Optional[str] = None
+    generated_at: str
+
+
+# ---------------------------------------------------------------------------
+# Execute
+# ---------------------------------------------------------------------------
+
+class ExecuteStartRequest(BaseModel):
+    session_id: int
+    solution_id: int
+    motor_node_id: Optional[str] = None
+
+
+class ExecuteStartResponse(BaseModel):
+    run_id: int
+
+
+class ExecuteProgressRequest(BaseModel):
+    session_id: int
+    run_id: int
+    current_step: int
+    total_steps: int
+    move: str
+
+
+class ExecuteCompleteRequest(BaseModel):
+    session_id: int
+    run_id: int
+    status: str
+
+
+# ---------------------------------------------------------------------------
+# Nodes
+# ---------------------------------------------------------------------------
+
+class HeartbeatRequest(BaseModel):
+    node_id: str
+    node_type: str
+    ip_address: Optional[str] = None
+    status: str = "online"
+    last_message: Optional[str] = None
+
+
+class NodeStatusResponse(BaseModel):
+    node_id: str
+    node_type: str
+    ip_address: Optional[str] = None
+    status: str
+    last_heartbeat: str
+    last_message: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# Logs
+# ---------------------------------------------------------------------------
+
+class LogEntryResponse(BaseModel):
+    id: int
+    session_id: Optional[int] = None
+    node_id: Optional[str] = None
+    level: str
+    event_type: str
+    message: str
+    metadata: Optional[str] = None
+    created_at: str
+
+
+# ---------------------------------------------------------------------------
+# Generic
+# ---------------------------------------------------------------------------
+
+class MessageResponse(BaseModel):
+    message: str
