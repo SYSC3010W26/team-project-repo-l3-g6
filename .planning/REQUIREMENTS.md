@@ -22,9 +22,9 @@
 
 ### Job State Machine
 
-- [ ] **JOB-01**: Server enforces pipeline ordering: Idle → Scanning → Solving → Executing → Done/Error
-- [ ] **JOB-02**: Solve only starts after a valid cube state exists in DB (confidence flag set)
-- [ ] **JOB-03**: Execute only starts after a solution exists in DB
+- [x] **JOB-01**: Server enforces pipeline ordering: Idle → Scanning → Solving → Executing → Done/Error
+- [x] **JOB-02**: Solve only starts after a valid cube state exists in DB (confidence flag set)
+- [x] **JOB-03**: Execute only starts after a solution exists in DB
 - [ ] **JOB-04**: Server detects missing heartbeat from any Pi within 5 seconds and transitions job to Error state
 - [ ] **JOB-05**: GUI actions (Start, Stop, Reset, Rescan) are written as control flags observable by other subsystems
 
@@ -84,9 +84,9 @@
 | API-03 | Phase 2 | Complete |
 | API-04 | Phase 2 | Complete |
 | API-05 | Phase 2 | Complete |
-| JOB-01 | Phase 3 | Pending |
-| JOB-02 | Phase 3 | Pending |
-| JOB-03 | Phase 3 | Pending |
+| JOB-01 | Phase 3 | Complete |
+| JOB-02 | Phase 3 | Complete |
+| JOB-03 | Phase 3 | Complete |
 | JOB-04 | Phase 3 | Pending |
 | JOB-05 | Phase 3 | Pending |
 | GUI-01 | Phase 4 | Pending |

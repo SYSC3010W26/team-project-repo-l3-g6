@@ -6,7 +6,7 @@
 
 - [x] **Phase 1: Database Foundation** - Complete database layer with schema, CRUD ops, and unit tests
 - [x] **Phase 2: FastAPI Backend** - REST and WebSocket API serving all subsystems on LAN (completed 2026-03-26)
-- [ ] **Phase 3: Job State Machine** - Pipeline ordering enforcement, heartbeat monitoring, control flags
+- [x] **Phase 3: Job State Machine** - Pipeline ordering enforcement, heartbeat monitoring, control flags (completed 2026-03-26)
 - [ ] **Phase 4: Web Dashboard (Core Pages)** - All 5 dashboard pages connected to live data
 - [ ] **Phase 5: 3D Cube Visualization and Notifications** - 3D cube model and fatal error notifications
 
@@ -55,7 +55,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 03-01: State machine (Idle, Scanning, Solving, Executing, Done/Error) with enforced transitions
+- [x] 03-01: State machine (Idle, Scanning, Solving, Executing, Done/Error) with enforced transitions
 - [ ] 03-02: Heartbeat monitor background task
 - [ ] 03-03: Control flags and state machine unit tests
 
@@ -96,7 +96,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Database Foundation | 3/3 | Complete |  |
 | 2. FastAPI Backend | 3/3 | Complete   | 2026-03-26 |
-| 3. Job State Machine | 0/3 | Not started | - |
+| 3. Job State Machine | 1/1 | Complete   | 2026-03-26 |
 | 4. Web Dashboard (Core Pages) | 0/3 | Not started | - |
 | 5. 3D Cube Visualization and Notifications | 0/2 | Not started | - |
 
