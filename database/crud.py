@@ -24,6 +24,7 @@ from .models import (
     MotorExecutionLogCreate,
     VerificationResultCreate,
     UserCreate,
+    JobControlCreate,
 )
 
 
@@ -432,3 +433,37 @@ def get_user_by_id(conn: sqlite3.Connection, user_id: int) -> Optional[dict]:
         "SELECT * FROM users WHERE id = ?", (user_id,)
     ).fetchone()
     return _row_to_dict(row) if row else None
+
+
+# ---------------------------------------------------------------------------
+# job_control
+# ---------------------------------------------------------------------------
+
+def create_job_control(conn: sqlite3.Connection, data: JobControlCreate) -> int:
+    """Insert a job control flag; returns the new row id."""
+    issued_at = data.issued_at or _now()
+    cursor = conn.execute(
+        """
+        INSERT INTO job_control (session_id, action, issued_by, issued_at, status)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (data.session_id, data.action, data.issued_by, issued_at, data.status),
+    )
+    return cursor.lastrowid
+
+
+def get_pending_controls(conn: sqlite3.Connection, session_id: int) -> list:
+    """Return all pending control flags for a session, ordered by issued_at."""
+    rows = conn.execute(
+        "SELECT * FROM job_control WHERE session_id = ? AND status = 'pending' ORDER BY issued_at",
+        (session_id,),
+    ).fetchall()
+    return [_row_to_dict(r) for r in rows]
+
+
+def ack_job_control(conn: sqlite3.Connection, control_id: int) -> None:
+    """Mark a control flag as acknowledged."""
+    conn.execute(
+        "UPDATE job_control SET status = 'acknowledged' WHERE id = ?",
+        (control_id,),
+    )
