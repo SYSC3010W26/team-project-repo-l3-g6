@@ -1,29 +1,9 @@
 """
-SYSC3010 - Pi Cubed Rubik's Cube Solver
-Solver Algorithm Pi - CFOP Algorithm Module
-Group L3-G6
+SYSC3010 - Pi Cubed | Group L3-G6 | Author: Luke Grundy
 
-Author: Luke Grundy
-
-Location: CFOP/CFOP_Algorithm.py
-
-Implementation of the CFOP solving algorithm
-(Cross, F2L, OLL, PLL)
-
-Orientation Convention:
-    White = 'U' colour (top face in solved state).
-    The cross is solved on the D layer so that F2L algorithms using U/R/F moves
-    do not disturb already-placed cross edges.
-
-Stage Summary:
-    Cross  - Per-edge BFS, solving DF → DR → DB → DL while preserving earlier edges.
-    F2L    - Lookup-table per slot (FR → FL → BR → BL). Each table is built from
-             composite move sequences guaranteed to preserve the D-cross and every
-             previously solved slot.
-    OLL    - 20-bit U-layer pattern matched against a pre-built lookup table;
-             4 AUF rotations tried.
-    PLL    - 12-element side top-row pattern matched against a pre-built lookup
-             table; 4 AUF rotations tried, followed by a final AUF alignment.
+CFOP solving algorithm (Cross, F2L, OLL, PLL). All lookup tables are built at
+construction time. The cross is solved on the D layer so that F2L algorithms
+using U/R/F moves do not disturb already-placed cross edges.
 """
 
 import copy
@@ -35,61 +15,48 @@ from CFOP import CFOP_Tables
 
 
 class CFOP_Algorithm(CubeAlgorithm):
-    """
-    CFOP Rubik's Cube solving algorithm.
-
-    All lookup tables are built once at construction time.  The cube state
-    passed in must be a list of 54 sticker strings in face order:
-        U(0-8), R(9-17), F(18-26), D(27-35), L(36-44), B(45-53)
-    """
 
     def __init__(self, cube_state):
         super().__init__(cube_state)
         self._working = copy.deepcopy(cube_state)
 
-        # Extended move map (adds r, f, M, x, y and their inverses)
         self._all_moves = CFOP_Tables.build_extra_moves()
 
-        # JSON files live in CFOP/Algorithms/ relative to this file
-        here     = os.path.dirname(os.path.abspath(__file__))
-        alg_dir  = os.path.join(here, "Algorithms")
-        oll_path = os.path.join(alg_dir, "OLL.json")
-        pll_path = os.path.join(alg_dir, "PLL.json")
+        here = os.path.dirname(os.path.abspath(__file__))
+        candidates = [
+            os.path.join(here, "Algorithms"),
+            here,
+            os.path.dirname(here),
+        ]
 
-        # OLL and PLL pattern → (auf_moves, alg_moves)
-        self._oll_lut = CFOP_Tables.build_oll_lookup(oll_path, self._all_moves)
-        self._pll_lut = CFOP_Tables.build_pll_lookup(pll_path, self._all_moves)
+        def _find_json(name):
+            for d in candidates:
+                p = os.path.join(d, name)
+                if os.path.isfile(p):
+                    return p
+            return os.path.join(candidates[0], name)
 
-        # F2L lookup tables - one per slot, built in solve order so that each
-        # table's composite moves preserve every previously solved slot.
+        self._oll_lut = CFOP_Tables.build_oll_lookup(_find_json("OLL.json"), self._all_moves)
+
         self._f2l_lut = {
-            "FR": CFOP_Tables.build_f2l_table(
-                "FR", "DFR", "FR", preserve_slots=[]
-            ),
-            "FL": CFOP_Tables.build_f2l_table(
-                "FL", "DFL", "FL", preserve_slots=["FR"]
-            ),
-            "BR": CFOP_Tables.build_f2l_table(
-                "BR", "DBR", "BR", preserve_slots=["FR", "FL"]
-            ),
-            "BL": CFOP_Tables.build_f2l_table(
-                "BL", "DBL", "BL", preserve_slots=["FR", "FL", "BR"]
-            ),
+            "FR": CFOP_Tables.build_f2l_table("FR", "DFR", "FR", preserve_slots=[], max_depth=5),
+            "FL": CFOP_Tables.build_f2l_table("FL", "DFL", "FL", preserve_slots=["FR"], max_depth=5),
+            "BR": CFOP_Tables.build_f2l_table("BR", "DBR", "BR", preserve_slots=["FR", "FL"], max_depth=5),
+            "BL": CFOP_Tables.build_f2l_table("BL", "DBL", "BL", preserve_slots=["FR", "FL", "BR"], max_depth=5),
         }
+
+        self._pll_lut = CFOP_Tables.build_pll_lookup(_find_json("PLL.json"), self._all_moves)
 
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
 
     def solve(self) -> list:
-        """Execute all four CFOP stages and return the full move list."""
         self._working = copy.deepcopy(self.cube_state)
-
         self.solve_cross()
         self.solve_f2l()
         self.solve_oll()
         self.solve_pll()
-
         return self.moves
 
     # ------------------------------------------------------------------
@@ -97,15 +64,8 @@ class CFOP_Algorithm(CubeAlgorithm):
     # ------------------------------------------------------------------
 
     def solve_cross(self, orientation_face=None):
-        """
-        Solve the D-layer white cross.
-
-        Edges are solved in the order DF → DR → DB → DL.  Each edge is placed
-        with a BFS that preserves all previously solved edges.
-
-        The orientation_face parameter is accepted for API compatibility but is
-        not used; the cross orientation is always fixed to the D face.
-        """
+        """Solve the D-layer white cross. Edges solved in order DF→DR→DB→DL,
+        each via BFS that preserves all previously solved edges."""
         print("Solving Cross...")
 
         solved_edges = []
@@ -115,29 +75,19 @@ class CFOP_Algorithm(CubeAlgorithm):
                 self._working = CFOP_Tables._apply_std(self._working, alg)
                 self.moves.extend(alg)
             solved_edges.append(slot)
+
+    # ------------------------------------------------------------------
+    # Stage 2 – F2L
     # ------------------------------------------------------------------
 
     def solve_f2l(self, orientation_face=None):
-        """
-        Solve the first two layers using per-slot lookup tables.
-
-        Processes corner-edge pairs in order: FR → FL → BR → BL.  Each pair is
-        looked up by its piece signature (where the pieces currently are and how
-        they are oriented).  If the exact signature is not in the table, up to
-        three AUF (U, U', U2) rotations are tried before the slot is skipped.
-
-        Skipping a slot is safer than applying a wrong algorithm; it means a
-        subsequent OLL/PLL step will simply not recognise the pattern rather
-        than silently corrupting an already-solved layer.
-        """
+        """Solve corner-edge pairs FR→FL→BR→BL via per-slot lookup tables.
+        Up to three AUF rotations are tried on a cache miss before skipping."""
         print("Solving F2L...")
 
-        # Maps each slot to the colour set of its target corner and edge pieces
         slot_pieces = {
-            "FR": ("DFR", "FR"),
-            "FL": ("DFL", "FL"),
-            "BR": ("DBR", "BR"),
-            "BL": ("DBL", "BL"),
+            "FR": ("DFR", "FR"), "FL": ("DFL", "FL"),
+            "BR": ("DBR", "BR"), "BL": ("DBL", "BL"),
         }
 
         for slot in ["FR", "FL", "BR", "BL"]:
@@ -145,9 +95,7 @@ class CFOP_Algorithm(CubeAlgorithm):
                 continue
 
             corner_colours, edge_colours = slot_pieces[slot]
-            sig = CFOP_Tables.get_piece_signature(
-                self._working, corner_colours, edge_colours
-            )
+            sig = CFOP_Tables.get_piece_signature(self._working, corner_colours, edge_colours)
             lut = self._f2l_lut[slot]
 
             if sig in lut:
@@ -155,13 +103,10 @@ class CFOP_Algorithm(CubeAlgorithm):
                 self._working = CFOP_Tables._apply_std(self._working, alg)
                 self.moves.extend(alg)
             else:
-                # Try AUF rotations to find a matching signature
                 found = False
                 for auf in [["U"], ["U'"], ["U2"]]:
                     test     = CFOP_Tables._apply_std(self._working, auf)
-                    test_sig = CFOP_Tables.get_piece_signature(
-                        test, corner_colours, edge_colours
-                    )
+                    test_sig = CFOP_Tables.get_piece_signature(test, corner_colours, edge_colours)
                     if test_sig in lut:
                         full_alg      = auf + lut[test_sig]
                         self._working = CFOP_Tables._apply_std(self._working, full_alg)
@@ -176,82 +121,40 @@ class CFOP_Algorithm(CubeAlgorithm):
     # ------------------------------------------------------------------
 
     def solve_oll(self, orientation_face=None):
-        """
-        Orient the last layer.
-
-        Computes a 20-bit fingerprint of the U-face and surrounding side top-row
-        stickers and looks it up in the pre-built OLL table.  All four AUF
-        rotations (none, U, U', U2) are tried before concluding the layer is
-        already oriented.
-        """
+        """Orient the last layer using a permutation-invariant orientation key.
+        Up to three AUF rotations are tried on a cache miss."""
         print("Solving OLL...")
 
-        # Skip if U face is already fully oriented
         if all(self._working[i] == "U" for i in range(9)):
             return
 
-        pat = CFOP_Tables.get_oll_pattern(self._working)
+        key = CFOP_Tables.get_oll_orient_key(self._working)
+        if key in self._oll_lut:
+            alg = self._oll_lut[key]
+            self._working = CFOP_Tables._apply_ext(self._working, alg, self._all_moves)
+            self.moves.extend(alg)
+            return
 
-        if pat in self._oll_lut:
-            auf_moves, alg = self._oll_lut[pat]
-            full          = auf_moves + alg
-            self._working = CFOP_Tables._apply_ext(self._working, full, self._all_moves)
-            self.moves.extend(full)
-        else:
-            for auf in [["U"], ["U'"], ["U2"]]:
-                test = CFOP_Tables._apply_ext(self._working, auf, self._all_moves)
-                pat  = CFOP_Tables.get_oll_pattern(test)
-                if pat in self._oll_lut:
-                    auf_moves, alg = self._oll_lut[pat]
-                    full          = auf + auf_moves + alg
-                    self._working = CFOP_Tables._apply_ext(
-                        self._working, full, self._all_moves
-                    )
-                    self.moves.extend(full)
-                    return
+        for auf in [["U"], ["U'"], ["U2"]]:
+            test = CFOP_Tables._apply_std(self._working, auf)
+            k2   = CFOP_Tables.get_oll_orient_key(test)
+            if k2 in self._oll_lut:
+                alg = auf + self._oll_lut[k2]
+                self._working = CFOP_Tables._apply_ext(self._working, alg, self._all_moves)
+                self.moves.extend(alg)
+                return
 
     # ------------------------------------------------------------------
     # Stage 4 – PLL
     # ------------------------------------------------------------------
 
     def solve_pll(self, orientation_face=None):
-        """
-        Permute the last layer.
-
-        Computes a 12-element fingerprint of the side top-row stickers and looks
-        it up in the pre-built PLL table.  After applying the algorithm a final
-        AUF is performed to align the last layer with the rest of the cube
-        (all four side-face top rows show a uniform colour).
-        """
+        """Permute the last layer using the pre-built PLL table (all 16
+        pre/post AUF combinations are stored, so no retry is needed)."""
         print("Solving PLL...")
 
         pattern = CFOP_Tables.get_pll_pattern(self._working)
-
-        if pattern in self._pll_lut:
-            auf_moves, alg = self._pll_lut[pattern]
-            full          = auf_moves + alg
-            self._working = CFOP_Tables._apply_ext(self._working, full, self._all_moves)
-            self.moves.extend(full)
-        else:
-            for auf in [["U"], ["U'"], ["U2"]]:
-                test = CFOP_Tables._apply_ext(self._working, auf, self._all_moves)
-                pat  = CFOP_Tables.get_pll_pattern(test)
-                if pat in self._pll_lut:
-                    auf_moves, alg = self._pll_lut[pat]
-                    full          = auf + auf_moves + alg
-                    self._working = CFOP_Tables._apply_ext(
-                        self._working, full, self._all_moves
-                    )
-                    self.moves.extend(full)
-                    break
-
-        # Final AUF: rotate U layer until all faces show a uniform top row.
-        # Delegate the solved check to Cube.is_solved() instead of reimplementing it.
-        for auf in [["U"], ["U'"], ["U2"]]:
-            test = CFOP_Tables._apply_ext(self._working, auf, self._all_moves)
-            check = Cube()
-            check.set_cube_state(test)
-            if check.is_solved():
-                self._working = test
-                self.moves.extend(auf)
-                return
+        alg     = self._pll_lut.get(pattern)
+        if alg:
+            self._working = CFOP_Tables._apply_ext(self._working, alg, self._all_moves)
+            self.moves.extend(alg)
