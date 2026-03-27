@@ -30,14 +30,14 @@
 
 ### Web Dashboard
 
-- [ ] **GUI-01**: Dashboard page — shows current pipeline stage, node health (online/offline per Pi), last cube state, active job status
-- [ ] **GUI-02**: Solve Results page — shows history of past solve sessions with algorithm, move count, solve time
-- [ ] **GUI-03**: Execution Monitor page — shows live progress of current motor execution (current move index, move list, completion percentage)
-- [ ] **GUI-04**: Solution Review page — displays full move sequence for a selected solve; allows step-by-step review
-- [ ] **GUI-05**: System Logs page — displays timestamped event log filtered by severity (Info/Warning/Error/Fatal)
+- [x] **GUI-01**: Dashboard page — shows current pipeline stage, node health (online/offline per Pi), last cube state, active job status
+- [x] **GUI-02**: Solve Results page — shows history of past solve sessions with algorithm, move count, solve time
+- [x] **GUI-03**: Execution Monitor page — shows live progress of current motor execution (current move index, move list, completion percentage)
+- [x] **GUI-04**: Solution Review page — displays full move sequence for a selected solve; allows step-by-step review
+- [x] **GUI-05**: System Logs page — displays timestamped event log filtered by severity (Info/Warning/Error/Fatal)
 - [ ] **GUI-06**: Dashboard displays a 3D interactive cube model reflecting the current scanned cube state
-- [ ] **GUI-07**: Dashboard is accessible from a phone or computer browser on the same LAN (no internet required)
-- [ ] **GUI-08**: User can trigger Start Solve, Stop, Reset, and Rescan actions from the dashboard
+- [x] **GUI-07**: Dashboard is accessible from a phone or computer browser on the same LAN (no internet required)
+- [x] **GUI-08**: User can trigger Start Solve, Stop, Reset, and Rescan actions from the dashboard
 
 ### Notifications & Error Handling
 
@@ -89,14 +89,14 @@
 | JOB-03 | Phase 3 | Pending |
 | JOB-04 | Phase 3 | Complete |
 | JOB-05 | Phase 3 | Pending |
-| GUI-01 | Phase 4 | Pending |
-| GUI-02 | Phase 4 | Pending |
-| GUI-03 | Phase 4 | Pending |
-| GUI-04 | Phase 4 | Pending |
-| GUI-05 | Phase 4 | Pending |
+| GUI-01 | Phase 4 | Complete |
+| GUI-02 | Phase 4 | Complete |
+| GUI-03 | Phase 4 | Complete |
+| GUI-04 | Phase 4 | Complete |
+| GUI-05 | Phase 4 | Complete |
 | GUI-06 | Phase 5 | Pending |
-| GUI-07 | Phase 4 | Pending |
-| GUI-08 | Phase 4 | Pending |
+| GUI-07 | Phase 4 | Complete |
+| GUI-08 | Phase 4 | Complete |
 | NOTF-01 | Phase 5 | Pending |
 | NOTF-02 | Phase 5 | Pending |
 | NOTF-03 | Phase 5 | Pending |

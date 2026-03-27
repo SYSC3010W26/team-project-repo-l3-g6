@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Executing Phase 04
-last_updated: "2026-03-27T09:55:26.157Z"
+status: Ready to execute
+last_updated: "2026-03-27T10:34:14.048Z"
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 13
-  completed_plans: 12
+  completed_phases: 4
+  total_plans: 14
+  completed_plans: 14
 ---
 
 # Project State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 04 (web-dashboard-core-pages) — EXECUTING
-Plan: 1 of 3
+Plan: 2 of 4
 
 ## Subsystem Scope
 
@@ -79,6 +79,8 @@ Do not modify: `solver/`, `motorctl/`, `EndToEndDemo/`, `UnitTests/Scanner/`
 - [Phase 02-gap-01]: sio singleton extracted to backend/sio_instance.py to break circular import between main.py and execute.py
 - [Phase 02-gap-01]: check_same_thread=False added to sqlite3.connect for async def route cross-thread compatibility
 - [Phase 03-job-state-machine]: heartbeat_monitor uses asyncio background task with 2s poll and 5s dead threshold; job_state.py created as Rule 3 blocking fix for parallel execution dependency
+- [Phase 04-web-dashboard-core-pages]: GET /jobs uses @router.get('') empty string before /{session_id} wildcard — list route must precede parameterized route to avoid FastAPI path collision
+- [Phase 04-web-dashboard-core-pages]: LogEntryResponse.severity maps from system_logs.level DB column — mismatch resolved at response construction layer without DB migration
 
 ## Session Notes
 

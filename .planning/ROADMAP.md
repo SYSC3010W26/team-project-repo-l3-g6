@@ -7,7 +7,7 @@
 - [x] **Phase 1: Database Foundation** - Complete database layer with schema, CRUD ops, and unit tests
 - [x] **Phase 2: FastAPI Backend** - REST and WebSocket API serving all subsystems on LAN (completed 2026-03-26)
 - [x] **Phase 3: Job State Machine** - Pipeline ordering enforcement, heartbeat monitoring, control flags (completed 2026-03-26)
-- [ ] **Phase 4: Web Dashboard (Core Pages)** - All 5 dashboard pages connected to live data
+- [x] **Phase 4: Web Dashboard (Core Pages)** - All 5 dashboard pages connected to live data (completed 2026-03-27)
 - [ ] **Phase 5: 3D Cube Visualization and Notifications** - 3D cube model and fatal error notifications
 
 ## Phase Details
@@ -68,12 +68,13 @@ Plans:
   2. WebSocket updates Dashboard and Execution Monitor in real time without page refresh
   3. Accessible from a phone browser on the same Wi-Fi network
   4. Start/Stop/Reset/Rescan buttons trigger correct control flag writes
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
 - [x] 04-01: React app scaffold and Dashboard page (pipeline stage, node health, control buttons)
 - [x] 04-02: Solve Results and Solution Review pages
 - [x] 04-03: Execution Monitor and System Logs pages
+- [x] 04-04-PLAN.md — Gap closure: GET /jobs list endpoint, solve steps array, logs severity/node field fix
 
 ### Phase 5: 3D Cube Visualization and Notifications
 **Goal**: Dashboard shows an interactive 3D cube model reflecting the current scanned state, and fatal errors trigger visible notifications.
@@ -97,9 +98,9 @@ Plans:
 | 1. Database Foundation | 3/3 | Complete |  |
 | 2. FastAPI Backend | 3/3 | Complete   | 2026-03-26 |
 | 3. Job State Machine | 1/1 | Complete   | 2026-03-26 |
-| 4. Web Dashboard (Core Pages) | 0/3 | Not started | - |
+| 4. Web Dashboard (Core Pages) | 4/4 | Complete   | 2026-03-27 |
 | 5. 3D Cube Visualization and Notifications | 0/2 | Not started | - |
 
 ---
 *Roadmap reformatted: 2026-03-24 for GSD tooling compatibility*
-*Last updated: 2026-03-25*
+*Last updated: 2026-03-27*
