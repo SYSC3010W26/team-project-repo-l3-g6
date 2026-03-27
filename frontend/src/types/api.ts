@@ -27,12 +27,12 @@ export interface ExecutionProgressUpdate {
 }
 
 export interface SolveSession {
-  id: string;
+  session_id: number;
   status: string;
-  algorithm: string | null;
-  move_count: number | null;
-  solve_time: number | null;
-  created_at: string;
+  selected_algorithm: string;
+  session_name: string | null;
+  started_at: string;
+  completed_at: string | null;
 }
 
 export interface SolutionStep {

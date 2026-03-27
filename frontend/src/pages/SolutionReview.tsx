@@ -53,14 +53,14 @@ export default function SolutionReview() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-white">Solution Review</h1>
-          <p className="text-slate-400 text-sm">Session: {sessionId?.substring(0, 12)}...</p>
+          <p className="text-slate-400 text-sm">Session #{sessionId}</p>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-3">
-        {solution.algorithm && (
+        {solution.algorithm_used && (
           <Badge className="bg-slate-700 text-slate-200 border-slate-600">
-            {solution.algorithm}
+            {solution.algorithm_used}
           </Badge>
         )}
         {steps.length > 0 && (

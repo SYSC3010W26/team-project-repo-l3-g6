@@ -20,7 +20,7 @@ export default function ExecutionMonitor() {
   });
 
   const activeSession = sessions.find((s: any) => s.status === 'executing');
-  const sessionId = activeSession?.id ?? null;
+  const sessionId = activeSession?.session_id ?? null;
 
   const { data: solution } = useQuery({
     queryKey: ['solution', sessionId],
@@ -65,7 +65,7 @@ export default function ExecutionMonitor() {
         <h1 className="text-2xl font-bold text-white">Execution Monitor</h1>
         {sessionId && (
           <p className="text-slate-400 text-sm mt-1 font-mono">
-            Session: {sessionId.substring(0, 12)}...
+            Session #{sessionId}
           </p>
         )}
       </div>

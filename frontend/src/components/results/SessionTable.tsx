@@ -49,36 +49,36 @@ export default function SessionTable({ sessions, loading }: Props) {
       <Table>
         <TableHeader>
           <TableRow className="border-slate-800 hover:bg-transparent">
-            <TableHead className="text-slate-400">Session ID</TableHead>
+            <TableHead className="text-slate-400">Session</TableHead>
+            <TableHead className="text-slate-400">Name</TableHead>
             <TableHead className="text-slate-400">Algorithm</TableHead>
-            <TableHead className="text-slate-400">Moves</TableHead>
-            <TableHead className="text-slate-400">Solve Time</TableHead>
+            <TableHead className="text-slate-400">Completed</TableHead>
             <TableHead className="text-slate-400">Status</TableHead>
-            <TableHead className="text-slate-400">Date</TableHead>
+            <TableHead className="text-slate-400">Started</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sessions.map((session) => (
             <TableRow
-              key={session.id}
+              key={session.session_id}
               className="border-slate-800 cursor-pointer hover:bg-slate-800/50"
-              onClick={() => navigate(`/review/${session.id}`)}
+              onClick={() => navigate(`/review/${session.session_id}`)}
             >
               <TableCell className="font-mono text-xs text-slate-300">
-                {session.id.substring(0, 8)}...
+                #{session.session_id}
               </TableCell>
               <TableCell className="text-slate-300">
-                {session.algorithm ?? '—'}
+                {session.session_name ?? '—'}
               </TableCell>
               <TableCell className="text-slate-300">
-                {session.move_count ?? '—'}
+                {session.selected_algorithm ?? '—'}
               </TableCell>
               <TableCell className="text-slate-300">
-                {session.solve_time ? `${session.solve_time.toFixed(1)}s` : '—'}
+                {session.completed_at ? 'Yes' : '—'}
               </TableCell>
               <TableCell><StatusBadge status={session.status} /></TableCell>
               <TableCell className="text-slate-500 text-xs">
-                {new Date(session.created_at).toLocaleString()}
+                {new Date(session.started_at).toLocaleString()}
               </TableCell>
             </TableRow>
           ))}

@@ -34,7 +34,7 @@ export default function Dashboard() {
 
   const latestSession = sessions?.[0];
   const status: PipelineStatus = latestSession?.status ?? 'idle';
-  const sessionId = latestSession?.id ?? null;
+  const sessionId = latestSession?.session_id ?? null;
 
   const { data: scanData, isLoading: scanLoading } = useQuery<CubeState>({
     queryKey: ['scan', sessionId],
@@ -132,7 +132,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="flex items-center gap-4">
             <Badge variant="outline" className="font-mono text-xs text-slate-300 border-slate-700">
-              {latestSession.id}
+              #{latestSession.session_id}
             </Badge>
             <Badge className={
               status === 'error' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
