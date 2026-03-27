@@ -71,9 +71,9 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: React app scaffold and Dashboard page (pipeline stage, node health, control buttons)
-- [ ] 04-02: Solve Results and Solution Review pages
-- [ ] 04-03: Execution Monitor and System Logs pages
+- [x] 04-01: React app scaffold and Dashboard page (pipeline stage, node health, control buttons)
+- [x] 04-02: Solve Results and Solution Review pages
+- [x] 04-03: Execution Monitor and System Logs pages
 
 ### Phase 5: 3D Cube Visualization and Notifications
 **Goal**: Dashboard shows an interactive 3D cube model reflecting the current scanned state, and fatal errors trigger visible notifications.
