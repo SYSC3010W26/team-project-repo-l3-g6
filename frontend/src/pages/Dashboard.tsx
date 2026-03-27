@@ -100,8 +100,8 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <Card className="glass border-kl-outline-variant xl:col-span-7">
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+        <Card className="glass border-kl-outline-variant/70 xl:col-span-7">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium uppercase tracking-wide text-kl-on-surface-variant">
               Pipeline Progress
@@ -124,13 +124,17 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="glass border-kl-outline-variant xl:col-span-5">
+        <Card className="glass border-kl-outline-variant/70 xl:col-span-5">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium uppercase tracking-wide text-kl-on-surface-variant">
               Session Snapshot
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
+            <p className="text-kl-on-surface-variant">
+              Session ID:{' '}
+              <span className="font-medium text-kl-on-surface">{latestSession?.session_id ?? '--'}</span>
+            </p>
             <p className="text-kl-on-surface-variant">
               Algorithm:{' '}
               <span className="font-medium text-kl-on-surface">{latestSession?.selected_algorithm ?? 'Waiting for run'}</span>
