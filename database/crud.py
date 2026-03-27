@@ -72,6 +72,14 @@ def get_solve_session_by_id(conn: sqlite3.Connection, session_id: int) -> Option
     return _row_to_dict(row) if row else None
 
 
+def get_all_solve_sessions(conn: sqlite3.Connection) -> list[dict]:
+    """Return all solve sessions ordered by most recent first."""
+    rows = conn.execute(
+        "SELECT * FROM solve_sessions ORDER BY started_at DESC"
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def update_solve_session_status(
     conn: sqlite3.Connection,
     session_id: int,

@@ -31,6 +31,23 @@ def start_job(body: schemas.JobStartRequest, conn: sqlite3.Connection = Depends(
     return schemas.JobStartResponse(session_id=session_id)
 
 
+@router.get("", response_model=list[schemas.SolveSessionResponse])
+def list_jobs(conn: sqlite3.Connection = Depends(get_db_dep)):
+    """Return all solve sessions, most recent first (GUI-01, GUI-02, GUI-03, GUI-08)."""
+    rows = crud.get_all_solve_sessions(conn)
+    return [
+        schemas.SolveSessionResponse(
+            session_id=r["id"],
+            status=r["status"],
+            selected_algorithm=r["selected_algorithm"],
+            session_name=r.get("session_name"),
+            started_at=r["started_at"],
+            completed_at=r.get("completed_at"),
+        )
+        for r in rows
+    ]
+
+
 @router.get("/{session_id}", response_model=schemas.JobStateResponse)
 def get_job(session_id: int, conn: sqlite3.Connection = Depends(get_db_dep)):
     row = crud.get_solve_session_by_id(conn, session_id)

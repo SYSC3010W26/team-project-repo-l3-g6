@@ -167,6 +167,10 @@ def test_logs_returns_severity_field_not_level(client):
 
 def test_logs_severity_filter(client):
     """GET /logs?severity=error returns only rows where system_logs.level = 'error'."""
+    # Register nodes first (node_id is FK to node_status)
+    client.post("/nodes/heartbeat", json={"node_id": "scanner", "node_type": "scanner", "status": "online"})
+    client.post("/nodes/heartbeat", json={"node_id": "motor", "node_type": "motor", "status": "online"})
+
     import database.db as db_module
     from database.crud import create_log
     from database.models import SystemLogCreate
@@ -199,6 +203,10 @@ def test_logs_severity_filter(client):
 
 def test_logs_node_filter(client):
     """GET /logs?node=scanner returns only rows where node_id = 'scanner'."""
+    # Register nodes first (node_id is FK to node_status)
+    client.post("/nodes/heartbeat", json={"node_id": "scanner", "node_type": "scanner", "status": "online"})
+    client.post("/nodes/heartbeat", json={"node_id": "motor", "node_type": "motor", "status": "online"})
+
     import database.db as db_module
     from database.crud import create_log
     from database.models import SystemLogCreate
@@ -231,6 +239,10 @@ def test_logs_node_filter(client):
 
 def test_logs_severity_and_node_combined_filter(client):
     """GET /logs?severity=warning&node=motor returns rows filtered by BOTH conditions."""
+    # Register nodes first (node_id is FK to node_status)
+    client.post("/nodes/heartbeat", json={"node_id": "scanner", "node_type": "scanner", "status": "online"})
+    client.post("/nodes/heartbeat", json={"node_id": "motor", "node_type": "motor", "status": "online"})
+
     import database.db as db_module
     from database.crud import create_log
     from database.models import SystemLogCreate
@@ -270,6 +282,7 @@ def test_logs_severity_and_node_combined_filter(client):
 
 def test_logs_no_filter_returns_all(client):
     """GET /logs with no params returns all rows (no filter applied)."""
+    # Use null node_id to avoid FK constraint
     import database.db as db_module
     from database.crud import create_log
     from database.models import SystemLogCreate
@@ -278,7 +291,7 @@ def test_logs_no_filter_returns_all(client):
     for i in range(3):
         create_log(conn, SystemLogCreate(
             session_id=None,
-            node_id=f"node-{i}",
+            node_id=None,
             level="info",
             event_type="test",
             message=f"log {i}",

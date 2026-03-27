@@ -33,6 +33,15 @@ class JobStateResponse(BaseModel):
     selected_algorithm: str
 
 
+class SolveSessionResponse(BaseModel):
+    session_id: int
+    status: str
+    selected_algorithm: str
+    session_name: Optional[str] = None
+    started_at: str
+    completed_at: Optional[str] = None
+
+
 # ---------------------------------------------------------------------------
 # Scan
 # ---------------------------------------------------------------------------
@@ -71,6 +80,11 @@ class SolveSubmitResponse(BaseModel):
     solution_id: int
 
 
+class SolutionStepResponse(BaseModel):
+    step_index: int
+    move_notation: str
+
+
 class SolveResultResponse(BaseModel):
     session_id: int
     solution_id: int
@@ -78,6 +92,7 @@ class SolveResultResponse(BaseModel):
     move_count: int
     solution_string: Optional[str] = None
     generated_at: str
+    steps: list[SolutionStepResponse] = []
 
 
 # ---------------------------------------------------------------------------
@@ -137,7 +152,7 @@ class LogEntryResponse(BaseModel):
     id: int
     session_id: Optional[int] = None
     node_id: Optional[str] = None
-    level: str
+    severity: str           # renamed from 'level' to match frontend SystemLog.severity
     event_type: str
     message: str
     metadata: Optional[str] = None

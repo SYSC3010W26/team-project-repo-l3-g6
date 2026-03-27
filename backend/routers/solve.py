@@ -39,6 +39,14 @@ def get_solution(session_id: int, conn: sqlite3.Connection = Depends(get_db_dep)
     if not rows:
         raise HTTPException(status_code=404, detail=f"No solution for session {session_id}")
     latest = rows[-1]
+    step_rows = crud.get_solution_steps_by_solution(conn, latest["id"])
+    steps = [
+        schemas.SolutionStepResponse(
+            step_index=s["step_index"],
+            move_notation=f"{s['face']} {s['direction']}",
+        )
+        for s in step_rows
+    ]
     return schemas.SolveResultResponse(
         session_id=latest["session_id"],
         solution_id=latest["id"],
@@ -46,4 +54,5 @@ def get_solution(session_id: int, conn: sqlite3.Connection = Depends(get_db_dep)
         move_count=latest["move_count"],
         solution_string=latest.get("solution_string"),
         generated_at=latest["generated_at"],
+        steps=steps,
     )
