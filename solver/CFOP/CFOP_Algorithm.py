@@ -36,16 +36,28 @@ class CFOP_Algorithm(CubeAlgorithm):
                     return p
             return os.path.join(candidates[0], name)
 
-        self._oll_lut = CFOP_Tables.build_oll_lookup(_find_json("OLL.json"), self._all_moves)
+        self._oll_lut = CFOP_Tables.build_oll_lookup(
+            _find_json("OLL.json"), self._all_moves
+        )
 
         self._f2l_lut = {
-            "FR": CFOP_Tables.build_f2l_table("FR", "DFR", "FR", preserve_slots=[], max_depth=5),
-            "FL": CFOP_Tables.build_f2l_table("FL", "DFL", "FL", preserve_slots=["FR"], max_depth=5),
-            "BR": CFOP_Tables.build_f2l_table("BR", "DBR", "BR", preserve_slots=["FR", "FL"], max_depth=5),
-            "BL": CFOP_Tables.build_f2l_table("BL", "DBL", "BL", preserve_slots=["FR", "FL", "BR"], max_depth=5),
+            "FR": CFOP_Tables.build_f2l_table(
+                "FR", "DFR", "FR", preserve_slots=[], max_depth=5
+            ),
+            "FL": CFOP_Tables.build_f2l_table(
+                "FL", "DFL", "FL", preserve_slots=["FR"], max_depth=5
+            ),
+            "BR": CFOP_Tables.build_f2l_table(
+                "BR", "DBR", "BR", preserve_slots=["FR", "FL"], max_depth=5
+            ),
+            "BL": CFOP_Tables.build_f2l_table(
+                "BL", "DBL", "BL", preserve_slots=["FR", "FL", "BR"], max_depth=5
+            ),
         }
 
-        self._pll_lut = CFOP_Tables.build_pll_lookup(_find_json("PLL.json"), self._all_moves)
+        self._pll_lut = CFOP_Tables.build_pll_lookup(
+            _find_json("PLL.json"), self._all_moves
+        )
 
     # ------------------------------------------------------------------
     # Public API
@@ -86,8 +98,10 @@ class CFOP_Algorithm(CubeAlgorithm):
         print("Solving F2L...")
 
         slot_pieces = {
-            "FR": ("DFR", "FR"), "FL": ("DFL", "FL"),
-            "BR": ("DBR", "BR"), "BL": ("DBL", "BL"),
+            "FR": ("DFR", "FR"),
+            "FL": ("DFL", "FL"),
+            "BR": ("DBR", "BR"),
+            "BL": ("DBL", "BL"),
         }
 
         for slot in ["FR", "FL", "BR", "BL"]:
@@ -95,7 +109,9 @@ class CFOP_Algorithm(CubeAlgorithm):
                 continue
 
             corner_colours, edge_colours = slot_pieces[slot]
-            sig = CFOP_Tables.get_piece_signature(self._working, corner_colours, edge_colours)
+            sig = CFOP_Tables.get_piece_signature(
+                self._working, corner_colours, edge_colours
+            )
             lut = self._f2l_lut[slot]
 
             if sig in lut:
@@ -105,10 +121,12 @@ class CFOP_Algorithm(CubeAlgorithm):
             else:
                 found = False
                 for auf in [["U"], ["U'"], ["U2"]]:
-                    test     = CFOP_Tables._apply_std(self._working, auf)
-                    test_sig = CFOP_Tables.get_piece_signature(test, corner_colours, edge_colours)
+                    test = CFOP_Tables._apply_std(self._working, auf)
+                    test_sig = CFOP_Tables.get_piece_signature(
+                        test, corner_colours, edge_colours
+                    )
                     if test_sig in lut:
-                        full_alg      = auf + lut[test_sig]
+                        full_alg = auf + lut[test_sig]
                         self._working = CFOP_Tables._apply_std(self._working, full_alg)
                         self.moves.extend(full_alg)
                         found = True
@@ -137,10 +155,12 @@ class CFOP_Algorithm(CubeAlgorithm):
 
         for auf in [["U"], ["U'"], ["U2"]]:
             test = CFOP_Tables._apply_std(self._working, auf)
-            k2   = CFOP_Tables.get_oll_orient_key(test)
+            k2 = CFOP_Tables.get_oll_orient_key(test)
             if k2 in self._oll_lut:
                 alg = auf + self._oll_lut[k2]
-                self._working = CFOP_Tables._apply_ext(self._working, alg, self._all_moves)
+                self._working = CFOP_Tables._apply_ext(
+                    self._working, alg, self._all_moves
+                )
                 self.moves.extend(alg)
                 return
 
@@ -154,7 +174,7 @@ class CFOP_Algorithm(CubeAlgorithm):
         print("Solving PLL...")
 
         pattern = CFOP_Tables.get_pll_pattern(self._working)
-        alg     = self._pll_lut.get(pattern)
+        alg = self._pll_lut.get(pattern)
         if alg:
             self._working = CFOP_Tables._apply_ext(self._working, alg, self._all_moves)
             self.moves.extend(alg)

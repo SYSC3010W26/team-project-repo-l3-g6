@@ -14,10 +14,7 @@ class Cube:
         self.state = self.create_solved_state()
 
     def create_solved_state(self):
-        return (
-            ['U'] * 9 + ['R'] * 9 + ['F'] * 9 +
-            ['D'] * 9 + ['L'] * 9 + ['B'] * 9
-        )
+        return ["U"] * 9 + ["R"] * 9 + ["F"] * 9 + ["D"] * 9 + ["L"] * 9 + ["B"] * 9
 
     def set_cube_state(self, new_state):
         self.state = new_state
@@ -25,8 +22,10 @@ class Cube:
     def apply_move(self, perm):
         if perm not in Permutation_Table.MOVES:
             raise ValueError(f"Invalid move: {perm}")
-        
-        self.state = Permutation_Table.apply_move(self.state, Permutation_Table.MOVES[perm])
+
+        self.state = Permutation_Table.apply_move(
+            self.state, Permutation_Table.MOVES[perm]
+        )
 
     def apply_sequence(self, move_sequence):
         for move in move_sequence:
@@ -39,7 +38,7 @@ class Cube:
 
     def is_solved(self):
         for i in range(0, 54, 9):
-            if len(set(self.state[i:i+9])) != 1:
+            if len(set(self.state[i : i + 9])) != 1:
                 return False
         return True
 

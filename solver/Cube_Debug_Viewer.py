@@ -18,19 +18,18 @@ from Cube_State import Cube
 from Algorithm_Selector import AlgorithmSelector
 
 COLORS = {
-    'U': '\033[97m',        # white
-    'D': '\033[93m',        # yellow
-    'F': '\033[92m',        # green
-    'B': '\033[94m',        # blue
-    'R': '\033[91m',        # red
-    'L': '\033[38;5;208m',  # orange
+    "U": "\033[97m",  # white
+    "D": "\033[93m",  # yellow
+    "F": "\033[92m",  # green
+    "B": "\033[94m",  # blue
+    "R": "\033[91m",  # red
+    "L": "\033[38;5;208m",  # orange
 }
-RESET = '\033[0m'
+RESET = "\033[0m"
 
 # Standard move notation for scrambling. D moves exluded for compatibillity with motor
-MOVES = ["R","R'","R2","U","U'","U2","F","F'","F2",
-         "L","L'","L2","B","B'","B2"]
 
+MOVES = ["R","R'","R2","U","U'","U2","F","F'","F2","L","L'","L2","B","B'","B2",]
 
 class CubeDebugger:
 
@@ -39,7 +38,7 @@ class CubeDebugger:
         self.history = []
 
     def color(self, sticker):
-        return COLORS.get(sticker, '') + sticker + RESET
+        return COLORS.get(sticker, "") + sticker + RESET
 
     def display(self):
         """Prints the cube state in a human-readable format."""
@@ -47,7 +46,7 @@ class CubeDebugger:
 
         def row(face, r):
             i = face * 9 + r * 3
-            return [self.color(x) for x in state[i:i+3]]
+            return [self.color(x) for x in state[i : i + 3]]
 
         print("\n")
         for r in range(3):
@@ -64,7 +63,9 @@ class CubeDebugger:
         last = None
         for i in range(length):
             move = random.choice(MOVES)
-            while last and move[0] == last[0]: # prevents multiple of the same move in a row
+            while (
+                last and move[0] == last[0]
+            ):  # prevents multiple of the same move in a row
                 move = random.choice(MOVES)
             scramble_moves.append(move)
             last = move
@@ -84,15 +85,17 @@ class CubeDebugger:
         stage = stage_name.lower()
         valid = {"cross", "f2l", "oll", "pll"}
         if stage not in valid:
-            print(f"  Unknown stage '{stage}'. Valid stages: {', '.join(sorted(valid))}")
+            print(
+                f"  Unknown stage '{stage}'. Valid stages: {', '.join(sorted(valid))}"
+            )
             return
 
         alg = self._build_algorithm()
         stage_map = {
             "cross": ("Cross", alg.solve_cross),
-            "f2l":   ("F2L",   alg.solve_f2l),
-            "oll":   ("OLL",   alg.solve_oll),
-            "pll":   ("PLL",   alg.solve_pll),
+            "f2l": ("F2L", alg.solve_f2l),
+            "oll": ("OLL", alg.solve_oll),
+            "pll": ("PLL", alg.solve_pll),
         }
         label, method = stage_map[stage]
 
@@ -121,9 +124,9 @@ class CubeDebugger:
 
         for stage_name, method in [
             ("Cross", alg.solve_cross),
-            ("F2L",   alg.solve_f2l),
-            ("OLL",   alg.solve_oll),
-            ("PLL",   alg.solve_pll),
+            ("F2L", alg.solve_f2l),
+            ("OLL", alg.solve_oll),
+            ("PLL", alg.solve_pll),
         ]:
             before = len(alg.moves)
             method()
@@ -160,11 +163,10 @@ class CubeDebugger:
         print("  solve pll     - run PLL stage only (Only works if OLL is solved)")
         print("  q / quit      - exit")
         print()
-        
+
         self.display()
 
-
-# --- main interaction loop ---
+        # --- main interaction loop ---
 
         while True:
             try:
@@ -181,7 +183,7 @@ class CubeDebugger:
                 break
 
             if cmd == "reset":
-                self.cube    = Cube()
+                self.cube = Cube()
                 self.history = []
                 self.display()
                 continue
@@ -190,7 +192,7 @@ class CubeDebugger:
                 if self.history:
                     print(f"Move history ({len(self.history)} moves):")
                     for i in range(0, len(self.history), 20):
-                        print(" ", " ".join(self.history[i:i+20]))
+                        print(" ", " ".join(self.history[i : i + 20]))
                 else:
                     print("  (no moves yet)")
                 continue
@@ -217,7 +219,9 @@ class CubeDebugger:
                 elif len(parts) == 2:
                     self.solve_stage(parts[1])
                 else:
-                    print("  Use: solve  |  solve cross  |  solve f2l  |  solve oll  |  solve pll")
+                    print(
+                        "  Use: solve  |  solve cross  |  solve f2l  |  solve oll  |  solve pll"
+                    )
                 self.display()
                 continue
 
