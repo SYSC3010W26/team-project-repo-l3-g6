@@ -36,3 +36,20 @@ Thumbs.db
 CLAUDE.md
 .cursorrules
 .cursorignore
+
+# ── GSD baseline (auto-generated) ──
+.gsd
+*.swp
+*.swo
+*~
+*.code-workspace
+!.env.example
+node_modules/
+.next/
+*.pyc
+target/
+vendor/
+*.log
+coverage/
+.cache/
+tmp/

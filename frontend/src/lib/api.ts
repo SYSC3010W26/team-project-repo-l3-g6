@@ -25,3 +25,6 @@ export const postControlFlag = (sessionId: string, action: string) =>
 
 export const startSolve = () =>
   api.post('/jobs/start').then((r) => r.data);
+
+export const getScanState = (sessionId: string) =>
+  api.get('/scan/' + sessionId).then((r) => r.data);

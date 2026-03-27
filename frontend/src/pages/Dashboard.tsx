@@ -5,9 +5,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import PipelineStepper from '@/components/dashboard/PipelineStepper';
 import NodeHealthCard from '@/components/dashboard/NodeHealthCard';
 import ControlButtons from '@/components/dashboard/ControlButtons';
-import { getAllNodes, getSessions, startSolve, postControlFlag } from '@/lib/api';
+import CubeViewer3D from '@/components/dashboard/CubeViewer3D';
+import { getAllNodes, getSessions, startSolve, postControlFlag, getScanState } from '@/lib/api';
 import { useSocketEvent } from '@/hooks/useSocket';
-import type { PipelineStatus, NodeStatus } from '@/types/api';
+import type { PipelineStatus, NodeStatus, CubeState } from '@/types/api';
 
 const NODE_DISPLAY_NAMES: Record<string, string> = {
   scanner: 'Scanner Pi',
@@ -34,6 +35,12 @@ export default function Dashboard() {
   const latestSession = sessions?.[0];
   const status: PipelineStatus = latestSession?.status ?? 'idle';
   const sessionId = latestSession?.id ?? null;
+
+  const { data: scanData, isLoading: scanLoading } = useQuery<CubeState>({
+    queryKey: ['scan', sessionId],
+    queryFn: () => getScanState(sessionId!),
+    enabled: !!sessionId,
+  });
 
   useSocketEvent('job_state_update', () => {
     queryClient.invalidateQueries({ queryKey: ['sessions'] });
@@ -78,6 +85,22 @@ export default function Dashboard() {
             <Skeleton className="h-12 w-full" />
           ) : (
             <PipelineStepper status={status} />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Cube State */}
+      <Card className="bg-slate-900 border-slate-800">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm text-slate-400 font-medium uppercase tracking-wide">
+            Cube State
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 overflow-hidden rounded-b-lg">
+          {scanLoading ? (
+            <Skeleton className="h-[300px] w-full" />
+          ) : (
+            <CubeViewer3D stateString={scanData?.state_string} />
           )}
         </CardContent>
       </Card>

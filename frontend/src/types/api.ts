@@ -47,3 +47,11 @@ export interface SystemLog {
   message: string;
   created_at: string;
 }
+
+export interface CubeState {
+  session_id: number;
+  state_string: string;
+  is_valid: boolean;
+  confidence: number | null;
+  created_at: string;
+}
