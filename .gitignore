@@ -36,9 +36,17 @@ Thumbs.db
 CLAUDE.md
 .cursorrules
 .cursorignore
+AGENTS.md
 
-# ── GSD baseline (auto-generated) ──
+# GSD / Antigravity planning
+.planning/
+.gsd/
 .gsd
+.gemini/
+.agent/
+.agents/
+_agent/
+_agents/
 *.swp
 *.swo
 *~
