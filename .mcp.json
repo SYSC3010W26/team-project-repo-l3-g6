@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "stitch": {
+      "command": "./scripts/start-stitch-mcp.sh"
+    }
+  }
+}

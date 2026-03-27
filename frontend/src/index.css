@@ -1,38 +1,129 @@
 @import "tailwindcss";
+
+/* ============================================================
+   Kinetic Lab Design System — Pi³ Solver
+   Ported from Google Stitch "Solver Dashboard" project
+   ============================================================ */
+
+/* ── Fonts ─────────────────────────────────────────────────── */
 @import "@fontsource/inter";
 
 :root {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-headline: 'Space Grotesk', sans-serif;
 
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 48%;
+  /* ── Kinetic Lab Color Tokens ──────────────────────────── */
+  --kl-background:             #080E1A;
+  --kl-surface:                #080E1A;
+  --kl-surface-container-lowest: #000000;
+  --kl-surface-container-low:  #0D1321;
+  --kl-surface-container:      #121A28;
+  --kl-surface-container-high: #182030;
+  --kl-surface-container-highest: #1D2637;
+  --kl-surface-bright:         #232C3F;
+  --kl-surface-variant:        #1D2637;
+
+  --kl-primary:                #BD9DFF;
+  --kl-primary-dim:            #8A4CFC;
+  --kl-primary-container:      #B28CFF;
+  --kl-on-primary:             #3C0089;
+
+  --kl-secondary:              #50E1F9;
+  --kl-secondary-dim:          #3CD2EB;
+  --kl-secondary-container:    #006876;
+  --kl-on-secondary:           #004D58;
+
+  --kl-tertiary:               #C4FFCD;
+  --kl-tertiary-dim:           #5DEF8F;
+  --kl-tertiary-container:     #6DFE9C;
+
+  --kl-error:                  #FF6E84;
+  --kl-error-dim:              #D73357;
+  --kl-error-container:        #A70138;
+  --kl-on-error:               #490013;
+
+  --kl-on-background:          #E6EBFC;
+  --kl-on-surface:             #E6EBFC;
+  --kl-on-surface-variant:     #A5ABBB;
+  --kl-outline:                #707585;
+  --kl-outline-variant:        #424856;
+
+  /* ── shadcn compatibility (mapped to Kinetic Lab) ──────── */
+  --background: 222 80% 7%;
+  --foreground: 225 84% 95%;
+  --card: 222 50% 10%;
+  --card-foreground: 225 84% 95%;
+  --popover: 222 50% 10%;
+  --popover-foreground: 225 84% 95%;
+  --primary: 259 100% 81%;
+  --primary-foreground: 268 100% 27%;
+  --secondary: 188 94% 65%;
+  --secondary-foreground: 191 100% 17%;
+  --muted: 222 34% 15%;
+  --muted-foreground: 224 15% 69%;
+  --accent: 222 34% 15%;
+  --accent-foreground: 225 84% 95%;
+  --destructive: 351 100% 72%;
+  --destructive-foreground: 225 84% 95%;
+  --border: 222 20% 24%;
+  --input: 222 20% 24%;
+  --ring: 259 100% 81%;
   --radius: 0.5rem;
 }
 
+/* ── Base ───────────────────────────────────────────────────── */
 * {
   font-family: var(--font-sans);
-  border-color: hsl(var(--border));
+  border-color: var(--kl-outline-variant);
 }
 
 body {
-  background-color: #020617;
-  color: #f8fafc;
+  background-color: var(--kl-background);
+  color: var(--kl-on-background);
   margin: 0;
+}
+
+/* ── Typography Utilities ───────────────────────────────────── */
+.font-space-grotesk,
+.font-headline {
+  font-family: var(--font-headline);
+}
+
+/* ── Material Symbols ───────────────────────────────────────── */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ── Kinetic Lab Surface Utilities ──────────────────────────── */
+.bg-kl-background        { background-color: var(--kl-background); }
+.bg-kl-surface            { background-color: var(--kl-surface); }
+.bg-kl-surface-low        { background-color: var(--kl-surface-container-low); }
+.bg-kl-surface-container  { background-color: var(--kl-surface-container); }
+.bg-kl-surface-high       { background-color: var(--kl-surface-container-high); }
+.bg-kl-surface-highest    { background-color: var(--kl-surface-container-highest); }
+.bg-kl-surface-lowest     { background-color: var(--kl-surface-container-lowest); }
+
+.text-kl-primary          { color: var(--kl-primary); }
+.text-kl-primary-dim      { color: var(--kl-primary-dim); }
+.text-kl-secondary        { color: var(--kl-secondary); }
+.text-kl-tertiary         { color: var(--kl-tertiary); }
+.text-kl-error            { color: var(--kl-error); }
+.text-kl-on-surface       { color: var(--kl-on-surface); }
+.text-kl-on-surface-variant { color: var(--kl-on-surface-variant); }
+.text-kl-outline          { color: var(--kl-outline); }
+
+.border-kl-outline-variant { border-color: var(--kl-outline-variant); }
+.border-kl-primary        { border-color: var(--kl-primary); }
+.border-kl-secondary      { border-color: var(--kl-secondary); }
+
+/* ── Glassmorphism ──────────────────────────────────────────── */
+.glass {
+  background-color: rgba(8, 14, 26, 0.60);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* ── Primary Button Glow ────────────────────────────────────── */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(189, 157, 255, 0.3);
 }
