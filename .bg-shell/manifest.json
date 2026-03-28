@@ -1,16 +1,1 @@
-[
-  {
-    "id": "e4fbf846",
-    "label": "./start_server.sh",
-    "command": "./start_server.sh",
-    "cwd": "/home/anakafeel/linuxworkspace/3010-group-repo/team-project-repo-l3-g6",
-    "ownerSessionFile": "/home/anakafeel/.gsd/sessions/--home-anakafeel-linuxworkspace-3010-group-repo-team-project-repo-l3-g6--/2026-03-28T02-37-20-168Z_9883e2ec-fd79-4286-8e44-9a43cc9b618d.jsonl",
-    "persistAcrossSessions": false,
-    "startedAt": 1774665535676,
-    "processType": "server",
-    "group": null,
-    "readyPattern": null,
-    "readyPort": null,
-    "pid": 521060
-  }
-]
+[]

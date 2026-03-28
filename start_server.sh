@@ -97,7 +97,7 @@ PI_SERVER_PORT=8000
 NODE_ID=rpi4-db
 NODE_TYPE=database
 HEARTBEAT_INTERVAL=3
-DATABASE_URL=./rubiks.db
+DATABASE_URL=./rubiks_dev.db
 EOF
 echo -e "   ${GREEN}✓${NC} .env configured for Database & GUI Pi"
 

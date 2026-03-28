@@ -69,6 +69,6 @@ def complete_execution(body: schemas.ExecuteCompleteRequest, conn: sqlite3.Conne
     db_status = "completed" if body.status == "success" else "failed"
     crud.update_execution_run_status(conn, body.run_id, db_status)
     # Update session status
-    session_status = "completed" if body.status == "success" else "failed"
+    session_status = "done" if body.status == "success" else "error"
     crud.update_solve_session_status(conn, body.session_id, session_status)
     return schemas.MessageResponse(message=f"Execution {db_status}")

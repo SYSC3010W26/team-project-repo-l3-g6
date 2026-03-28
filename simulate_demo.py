@@ -135,8 +135,9 @@ def run_demo(keep_alive: bool = True):
         "move_count": len(moves),
         "solution_string": SOLUTION_MOVES,
     })
-    solution = r.json()
-    print(f"   Solution submitted ({len(moves)} moves)")
+    solution_resp = r.json()
+    solution_id = solution_resp["solution_id"]
+    print(f"   Solution submitted ({len(moves)} moves), ID: {solution_id}")
 
     time.sleep(2)
 
@@ -146,19 +147,51 @@ def run_demo(keep_alive: bool = True):
     if r.status_code == 200:
         print(f"   Status → executing")
 
+    # Start the execution run (unblocks Socket.IO progress)
+    r = requests.post(f"{API}/execute/start", json={
+        "session_id": session_id,
+        "solution_id": solution_id,
+        "motor_node_id": "rpi3-motors"
+    })
+    run_resp = r.json()
+    run_id = run_resp["run_id"]
+    print(f"   Execution run #{run_id} started")
+
     time.sleep(1)
 
-    # Step 6: Simulate motor execution progress
+    # Step 6: Motor executing moves
     print("\n── Step 6: Motor executing moves ──")
     for i, move in enumerate(moves):
         print(f"   [{i+1}/{len(moves)}] {move}")
+        # Report progress to backend (triggers WebSocket event for dashboard)
+        requests.post(f"{API}/execute/progress", json={
+            "session_id": session_id,
+            "run_id": run_id,
+            "current_step": i + 1,
+            "total_steps": len(moves),
+            "move": move
+        })
         time.sleep(0.5)
 
     # Step 7: Mark as done
     print("\n── Step 7: Completing ──")
+    # Mark execution run as success
+    requests.post(f"{API}/execute/complete", json={
+        "session_id": session_id,
+        "run_id": run_id,
+        "status": "success"
+    })
+
+    # Final job transition to 'done'
     r = requests.post(f"{API}/jobs/{session_id}/transition", json={"to": "done"})
     if r.status_code == 200:
         print(f"   Status → done ✅")
+    else:
+        # If execute/complete already set it to 'completed', transition to 'done' might fail
+        # depending on state machine rules. Let's check current status.
+        r_state = requests.get(f"{API}/jobs/{session_id}")
+        current_status = r_state.json()["status"]
+        print(f"   Status → {current_status} ✅")
 
     print("\n🎉 Demo complete! Check the dashboard at http://localhost:4173")
 
