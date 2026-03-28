@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +10,7 @@ import CubeViewer3D from '@/components/dashboard/CubeViewer3D';
 import DashboardLogPanel from '@/components/dashboard/DashboardLogPanel';
 import { getAllNodes, getSessions, startSolve, postControlFlag, getScanState } from '@/lib/api';
 import { useSocketEvent } from '@/hooks/useSocket';
+import { applyMove } from '@/lib/cube';
 import type { PipelineStatus, NodeStatus, CubeState } from '@/types/api';
 
 const NODE_DISPLAY_NAMES: Record<string, string> = {
@@ -48,6 +50,24 @@ export default function Dashboard() {
     queryKey: ['scan', sessionId],
     queryFn: () => getScanState(sessionId!),
     enabled: !!sessionId,
+  });
+
+  const [liveCubeState, setLiveCubeState] = useState<string | undefined>(undefined);
+  const [animatingMove, setAnimatingMove] = useState<string | undefined>(undefined);
+
+  // Sync liveCubeState with scanData when it's first available or when session changes
+  useEffect(() => {
+    if (scanData?.state_string) {
+      setLiveCubeState(scanData.state_string);
+      setAnimatingMove(undefined);
+    }
+  }, [scanData?.state_string, sessionId]);
+
+  useSocketEvent('execution_progress', (data) => {
+    if (String(data.session_id) === String(sessionId) && data.move) {
+      setAnimatingMove(data.move);
+      setLiveCubeState((prev) => (prev ? applyMove(prev, data.move) : prev));
+    }
   });
 
   useSocketEvent('job_state_update', () => {
@@ -161,7 +181,7 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 px-4 pb-4">
-            {scanLoading ? <Skeleton className="h-[300px] w-full bg-kl-surface-high" /> : <CubeViewer3D stateString={scanData?.state_string} />}
+            {scanLoading ? <Skeleton className="h-[300px] w-full bg-kl-surface-high" /> : <CubeViewer3D stateString={liveCubeState} animatingMove={animatingMove} />}
           </CardContent>
         </Card>
 
