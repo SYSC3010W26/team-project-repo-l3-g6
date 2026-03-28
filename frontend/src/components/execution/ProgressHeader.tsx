@@ -7,31 +7,39 @@ interface Props {
 }
 
 export default function ProgressHeader({ progress }: Props) {
-  if (!progress) return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-slate-400 text-sm">No active execution</span>
-        <Badge className="bg-slate-700 text-slate-400">0 / 0</Badge>
+  if (!progress) {
+    return (
+      <div className="space-y-4 rounded-xl border border-kl-outline-variant/70 bg-kl-surface-low/50 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-kl-on-surface-variant">No active execution</span>
+          <Badge className="border border-kl-outline-variant bg-kl-surface text-kl-on-surface-variant">0 / 0</Badge>
+        </div>
+        <Progress value={0} className="h-2 bg-kl-surface-high" />
+        <p className="text-right text-xs text-kl-outline">Waiting for execution progress…</p>
       </div>
-      <Progress value={0} className="h-2 bg-slate-800" />
-    </div>
-  );
+    );
+  }
 
   const pct = Math.round(progress.pct_complete * 100);
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-white font-mono text-lg font-semibold">{progress.move}</span>
-          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Executing</Badge>
+    <div className="space-y-4 rounded-xl border border-cyan-400/30 bg-cyan-500/[0.06] p-4 shadow-[0_0_40px_rgba(80,225,249,0.08)]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="font-mono text-lg font-semibold tracking-wide text-kl-on-surface">{progress.move}</span>
+          <Badge className="border border-cyan-400/35 bg-cyan-400/10 text-cyan-200">Executing</Badge>
         </div>
-        <Badge className="bg-slate-700 text-slate-200">
+        <Badge className="border border-kl-primary/40 bg-kl-primary/10 font-mono text-kl-primary">
           {progress.current_step} / {progress.total_steps}
         </Badge>
       </div>
-      <Progress value={pct} className="h-3 bg-slate-800" />
-      <p className="text-slate-400 text-xs text-right">{pct}% complete</p>
+
+      <Progress value={pct} className="h-3 bg-kl-surface-high" />
+
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-mono text-cyan-200">live progress</span>
+        <span className="font-mono text-cyan-300">{pct}% complete</span>
+      </div>
     </div>
   );
 }

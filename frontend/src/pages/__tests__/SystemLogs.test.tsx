@@ -49,7 +49,7 @@ describe('SystemLogs', () => {
 
     await screen.findByText('No log entries');
 
-    await user.click(screen.getByRole('button', { name: 'Error' }));
+    await user.click(screen.getByRole('radio', { name: 'Error' }));
 
     expect(mockGetLogs).toHaveBeenCalledWith('error', undefined);
   });

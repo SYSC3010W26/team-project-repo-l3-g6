@@ -49,7 +49,7 @@ describe('SolutionReview', () => {
     expect(screen.getByText('Kociemba')).toBeInTheDocument();
     expect(screen.getByText('3 moves')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /next/i }));
+    await user.click(screen.getAllByRole('button')[3]);
 
     expect(screen.getByText('Step 2 / 3')).toBeInTheDocument();
   });

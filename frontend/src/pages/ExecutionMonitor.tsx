@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ProgressHeader from '@/components/execution/ProgressHeader';
 import MoveProgressList from '@/components/execution/MoveProgressList';
@@ -28,7 +28,6 @@ export default function ExecutionMonitor() {
     enabled: !!sessionId,
   });
 
-  // Real-time execution progress via Socket.IO
   useSocketEvent('execution_progress', (data) => {
     setLiveProgress(data);
     queryClient.invalidateQueries({ queryKey: ['sessions'] });
@@ -44,56 +43,53 @@ export default function ExecutionMonitor() {
 
   if (!activeSession && !liveProgress) {
     return (
-      <div className="space-y-4 max-w-2xl">
-        <h1 className="text-2xl font-bold text-white">Execution Monitor</h1>
-        <div className="text-center py-16 border border-slate-800 rounded-lg bg-slate-900/30">
-          <p className="text-slate-400 font-medium">No active solve</p>
-          <p className="text-slate-500 text-sm mt-1">Start a solve to track motor progress.</p>
-          <Link to="/">
-            <Button variant="outline" className="mt-4 border-slate-700 text-slate-300">
-              Go to Dashboard
-            </Button>
-          </Link>
+      <div className="mx-auto max-w-3xl space-y-6">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.22em] text-kl-secondary">KINETIC LAB</p>
+          <h1 className="font-space-grotesk text-3xl font-semibold text-kl-on-surface">Execution Monitor</h1>
         </div>
+
+        <Card className="glass border-kl-outline-variant/70 bg-kl-surface-low/40">
+          <CardContent className="py-14 text-center">
+            <p className="font-space-grotesk text-xl text-kl-on-surface">No active solve</p>
+            <p className="mt-1 text-sm text-kl-on-surface-variant">Start a solve to track motor progress.</p>
+            <Link to="/">
+              <Button variant="outline" className="mt-5 border-kl-outline-variant text-kl-on-surface-variant hover:bg-kl-surface-high">
+                Go to Dashboard
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Execution Monitor</h1>
-        {sessionId && (
-          <p className="text-slate-400 text-sm mt-1 font-mono">
-            Session #{sessionId}
-          </p>
-        )}
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="space-y-2">
+        <p className="text-xs uppercase tracking-[0.22em] text-kl-secondary">KINETIC LAB</p>
+        <h1 className="font-space-grotesk text-3xl font-semibold text-kl-on-surface">Execution Monitor</h1>
+        {sessionId && <p className="font-mono text-xs text-kl-on-surface-variant">Session #{sessionId}</p>}
       </div>
 
       {isComplete && (
-        <div className="rounded-lg bg-green-500/10 border border-green-500/30 px-4 py-3">
-          <p className="text-green-400 font-medium">✓ Execution complete</p>
+        <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/[0.08] px-4 py-3">
+          <p className="font-medium text-emerald-300">Execution complete</p>
         </div>
       )}
 
-      <Card className="bg-slate-900 border-slate-800">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm text-slate-400 font-medium uppercase tracking-wide">
-            Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Card className="glass border-kl-outline-variant/70 bg-kl-surface-low/45">
+        <CardContent className="p-4 sm:p-5">
+          <p className="mb-3 text-xs uppercase tracking-[0.2em] text-kl-primary">Progress</p>
           <ProgressHeader progress={liveProgress} />
         </CardContent>
       </Card>
 
       {allMoves.length > 0 && (
-        <div>
-          <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
-            Move Sequence
-          </h2>
+        <section className="space-y-3">
+          <p className="text-xs uppercase tracking-[0.2em] text-kl-primary">Move Sequence</p>
           <MoveProgressList moves={allMoves} currentStep={currentStep} />
-        </div>
+        </section>
       )}
     </div>
   );
