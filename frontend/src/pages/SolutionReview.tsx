@@ -63,7 +63,7 @@ export default function SolutionReview() {
   }, [currentStep, steps]);
 
   // Derive current cube state based on steps taken
-  let currentCubeState = scanStateData?.state || SOLVED_STATE;
+  let currentCubeState = scanStateData?.state_string || SOLVED_STATE;
   if (steps.length > 0 && currentStep > 0) {
     for (let i = 0; i < currentStep; i++) {
       currentCubeState = applyMove(currentCubeState, steps[i].move_notation);
