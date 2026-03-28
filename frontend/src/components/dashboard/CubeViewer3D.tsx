@@ -1,4 +1,5 @@
-import { Canvas } from '@react-three/fiber';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -16,6 +17,15 @@ const COLOR_MAP: Record<string, string> = {
 };
 
 type FaceKey = 'U' | 'D' | 'L' | 'R' | 'F' | 'B';
+
+const MOVE_CONFIG: Record<string, { axis: THREE.Vector3; condition: (pos: THREE.Vector3) => boolean; angle: number }> = {
+  U: { axis: new THREE.Vector3(0, 1, 0), condition: (p) => p.y > 0.5, angle: -Math.PI / 2 },
+  D: { axis: new THREE.Vector3(0, 1, 0), condition: (p) => p.y < -0.5, angle: Math.PI / 2 },
+  L: { axis: new THREE.Vector3(1, 0, 0), condition: (p) => p.x < -0.5, angle: Math.PI / 2 },
+  R: { axis: new THREE.Vector3(1, 0, 0), condition: (p) => p.x > 0.5, angle: -Math.PI / 2 },
+  F: { axis: new THREE.Vector3(0, 0, 1), condition: (p) => p.z > 0.5, angle: -Math.PI / 2 },
+  B: { axis: new THREE.Vector3(0, 0, 1), condition: (p) => p.z < -0.5, angle: Math.PI / 2 },
+};
 
 interface CubeletStickerProps {
   face: FaceKey;
@@ -53,17 +63,26 @@ interface CubeletData {
   }[];
 }
 
-function Cubelet({ position, stickers }: CubeletData) {
+function Cubelet({ position, stickers, index, cubeletRefs }: CubeletData & { index: number; cubeletRefs: React.MutableRefObject<(THREE.Group | null)[]> }) {
+  const groupRef = useRef<THREE.Group>(null);
+  
+  // Register this cubelet's rotation group ref
+  useEffect(() => {
+    cubeletRefs.current[index] = groupRef.current;
+  }, [index, cubeletRefs]);
+
   return (
-    <group position={position}>
-      {/* Black cube body for this cubelet */}
-      <mesh>
-        <boxGeometry args={[0.98, 0.98, 0.98]} />
-        <meshStandardMaterial color="#111111" />
-      </mesh>
-      {stickers.map((s, i) => (
-        <CubeletSticker key={i} face={s.face} color={s.color} />
-      ))}
+    <group ref={groupRef}>
+      <group position={position}>
+        {/* Black cube body for this cubelet */}
+        <mesh>
+          <boxGeometry args={[0.98, 0.98, 0.98]} />
+          <meshStandardMaterial color="#111111" />
+        </mesh>
+        {stickers.map((s, i) => (
+          <CubeletSticker key={i} face={s.face} color={s.color} />
+        ))}
+      </group>
     </group>
   );
 }
@@ -122,17 +141,79 @@ function getCubeletsFromState(stateStr: string): CubeletData[] {
 
 interface CubeSceneProps {
   stateStr: string;
+  animatingMove?: string;
+  onAnimationComplete: () => void;
 }
 
-function CubeScene({ stateStr }: CubeSceneProps) {
-  const cubelets = getCubeletsFromState(stateStr);
+function CubeScene({ stateStr, animatingMove, onAnimationComplete }: CubeSceneProps) {
+  const cubelets = useMemo(() => getCubeletsFromState(stateStr), [stateStr]);
+  const cubeletRefs = useRef<(THREE.Group | null)[]>([]);
+  const animProgress = useRef(0);
+  const activeMove = useRef<string | null>(null);
+  const ANIM_DURATION = 0.25; // 250ms
+
+  // Synchronize the animation ref with the prop
+  useEffect(() => {
+    if (animatingMove) {
+      activeMove.current = animatingMove;
+      animProgress.current = 0;
+    } else {
+      activeMove.current = null;
+      // Reset rotations when not animating
+      cubeletRefs.current.forEach(ref => {
+        if (ref) ref.rotation.set(0, 0, 0);
+      });
+    }
+  }, [animatingMove]);
+
+  useFrame((_, delta) => {
+    if (!activeMove.current) return;
+
+    animProgress.current += delta / ANIM_DURATION;
+    const progress = Math.min(animProgress.current, 1);
+    const move = activeMove.current;
+
+    const face = move[0];
+    const modifier = move[1] || '';
+    const config = MOVE_CONFIG[face];
+    if (!config) return;
+
+    let totalAngle = config.angle;
+    if (modifier === "'") totalAngle *= -1;
+    if (modifier === '2') totalAngle *= 2;
+
+    const currentAngle = totalAngle * progress;
+
+    cubeletRefs.current.forEach((ref, i) => {
+      if (!ref || !cubelets[i]) return;
+      const pos = cubelets[i].position;
+      const vecPos = new THREE.Vector3(...pos);
+      if (config.condition(vecPos)) {
+        if (config.axis.x !== 0) ref.rotation.x = currentAngle;
+        if (config.axis.y !== 0) ref.rotation.y = currentAngle;
+        if (config.axis.z !== 0) ref.rotation.z = currentAngle;
+      }
+    });
+
+    if (progress >= 1) {
+      // Instantly clear the move ref so we don't double-call completion
+      activeMove.current = null;
+      onAnimationComplete();
+    }
+  });
 
   return (
     <>
       <ambientLight intensity={0.8} />
       <directionalLight position={[5, 5, 5]} intensity={0.6} />
       {cubelets.map((c, i) => (
-        <Cubelet key={i} position={c.position} stickers={c.stickers} />
+        <Cubelet 
+          key={i} 
+          position={c.position} 
+          stickers={c.stickers} 
+          index={i} 
+          cubeletRefs={cubeletRefs} 
+        />
       ))}
     </>
   );
@@ -140,16 +221,43 @@ function CubeScene({ stateStr }: CubeSceneProps) {
 
 interface CubeViewer3DProps {
   stateString?: string;
+  animatingMove?: string;
 }
 
-export default function CubeViewer3D({ stateString }: CubeViewer3DProps) {
-  const stateStr = stateString ?? SOLVED_STATE;
+export default function CubeViewer3D({ stateString, animatingMove }: CubeViewer3DProps) {
+  const [displayedState, setDisplayedState] = useState(stateString ?? SOLVED_STATE);
+  const [currentAnimMove, setCurrentAnimMove] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const target = stateString ?? SOLVED_STATE;
+    if (target !== displayedState) {
+      if (animatingMove) {
+        // Only start animation if it's not already running the same move
+        if (currentAnimMove !== animatingMove) {
+          setCurrentAnimMove(animatingMove);
+        }
+      } else {
+        // Snap directly if no move provided
+        setDisplayedState(target);
+        setCurrentAnimMove(undefined);
+      }
+    }
+  }, [stateString, animatingMove, displayedState, currentAnimMove]);
+
+  const handleAnimationComplete = () => {
+    setDisplayedState(stateString ?? SOLVED_STATE);
+    setCurrentAnimMove(undefined);
+  };
 
   return (
-    <div className="bg-slate-900 rounded-lg" style={{ height: 300 }}>
+    <div className="bg-slate-900 rounded-lg shadow-inner overflow-hidden" style={{ height: 300 }}>
       <Canvas camera={{ position: [5, 5, 5], fov: 45 }}>
         <OrbitControls enablePan={false} />
-        <CubeScene stateStr={stateStr} />
+        <CubeScene 
+          stateStr={displayedState} 
+          animatingMove={currentAnimMove}
+          onAnimationComplete={handleAnimationComplete}
+        />
       </Canvas>
     </div>
   );
