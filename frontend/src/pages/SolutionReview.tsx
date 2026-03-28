@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,27 +44,29 @@ export default function SolutionReview() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div className="flex items-center gap-3">
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.22em] text-kl-secondary">KINETIC LAB</p>
+          <h1 className="font-space-grotesk text-3xl font-semibold text-kl-on-surface">Solution Review</h1>
+          <p className="font-mono text-xs text-kl-on-surface-variant">Session #{sessionId}</p>
+        </div>
         <Link to="/results">
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
-            <ArrowLeft size={18} />
+          <Button variant="outline" className="border-kl-outline-variant text-kl-on-surface-variant hover:bg-kl-surface-high">
+            <span className="material-symbols-outlined mr-1 text-base" aria-hidden="true">arrow_back</span>
+            Back to Results
           </Button>
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-white">Solution Review</h1>
-          <p className="text-slate-400 text-sm">Session #{sessionId}</p>
-        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">
         {solution.algorithm_used && (
-          <Badge className="bg-slate-700 text-slate-200 border-slate-600">
+          <Badge className="border-kl-primary/40 bg-kl-primary/10 text-kl-primary">
             {solution.algorithm_used}
           </Badge>
         )}
         {steps.length > 0 && (
-          <Badge className="bg-slate-700 text-slate-200 border-slate-600">
+          <Badge className="border-cyan-400/35 bg-cyan-400/10 font-mono text-cyan-200">
             {steps.length} moves
           </Badge>
         )}

@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface Props {
@@ -32,37 +31,42 @@ export default function StepNavigator({ total, current, onStep }: Props) {
   }, [playing, total, onStep]);
 
   return (
-    <div className="flex items-center gap-3">
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => onStep(Math.max(0, current - 1))}
-        disabled={current === 0}
-        className="border-slate-700 text-slate-300 hover:bg-slate-800"
-      >
-        <ChevronLeft size={16} />
-      </Button>
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => setPlaying((p) => !p)}
-        disabled={total === 0}
-        className="border-slate-700 text-slate-300 hover:bg-slate-800"
-      >
-        {playing ? <Pause size={16} /> : <Play size={16} />}
-      </Button>
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => onStep(Math.min(total - 1, current + 1))}
-        disabled={current >= total - 1}
-        className="border-slate-700 text-slate-300 hover:bg-slate-800"
-      >
-        <ChevronRight size={16} />
-      </Button>
-      <span className="text-slate-400 text-sm">
-        Step {current + 1} / {total || 1}
-      </span>
+    <div className="rounded-xl border border-kl-outline-variant/70 bg-kl-surface-low/45 p-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onStep(Math.max(0, current - 1))}
+          disabled={current === 0}
+          className="border-kl-outline-variant text-kl-on-surface-variant hover:bg-kl-surface-high"
+          aria-label="Previous step"
+        >
+          <span className="material-symbols-outlined text-base" aria-hidden="true">chevron_left</span>
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setPlaying((p) => !p)}
+          disabled={total === 0}
+          className="border-kl-outline-variant text-kl-on-surface-variant hover:bg-kl-surface-high"
+          aria-label={playing ? 'Pause autoplay' : 'Play autoplay'}
+        >
+          <span className="material-symbols-outlined text-base" aria-hidden="true">{playing ? 'pause' : 'play_arrow'}</span>
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onStep(Math.min(total - 1, current + 1))}
+          disabled={current >= total - 1}
+          className="border-kl-outline-variant text-kl-on-surface-variant hover:bg-kl-surface-high"
+          aria-label="Next step"
+        >
+          <span className="material-symbols-outlined text-base" aria-hidden="true">chevron_right</span>
+        </Button>
+        <span className="font-mono text-sm text-kl-on-surface-variant">
+          Step {current + 1} / {total || 1}
+        </span>
+      </div>
     </div>
   );
 }

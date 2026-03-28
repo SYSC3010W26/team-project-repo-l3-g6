@@ -15,8 +15,8 @@ export default function MoveList({ steps, currentStep }: Props) {
   }
 
   return (
-    <ScrollArea className="h-96 rounded-lg border border-slate-800 bg-slate-900/50">
-      <div className="p-4 space-y-1">
+    <ScrollArea className="h-96 rounded-xl border border-kl-outline-variant/70 bg-kl-surface-low/45">
+      <div className="space-y-1 p-3 sm:p-4">
         {steps.map((step, idx) => {
           const isActive = idx === currentStep;
           const isDone = idx < currentStep;
@@ -24,20 +24,21 @@ export default function MoveList({ steps, currentStep }: Props) {
             <div
               key={step.step_index}
               className={cn(
-                'flex items-center gap-4 px-3 py-2 rounded-md transition-colors',
-                isActive && 'bg-blue-600/20 border border-blue-500/30',
-                isDone && 'opacity-50'
+                'flex min-h-10 items-center gap-3 rounded-md border px-3 py-2 font-mono text-xs sm:text-sm transition-colors',
+                'border-transparent bg-kl-surface-low/30',
+                isActive && 'border-cyan-400/35 bg-cyan-500/[0.08] text-cyan-100',
+                isDone && 'bg-kl-surface-low/25 text-kl-outline',
+                !isActive && !isDone && 'text-kl-on-surface-variant',
               )}
             >
-              <span className="text-slate-500 text-xs w-6 text-right">{idx + 1}</span>
-              <span className={cn(
-                'font-mono text-sm',
-                isActive ? 'text-blue-300 font-semibold' : 'text-slate-300',
-                isDone && 'text-slate-500'
-              )}>
+              <span className="w-8 text-right tracking-wide text-kl-outline">{String(idx + 1).padStart(2, '0')}</span>
+              <span className={cn('truncate tracking-wide', isActive && 'font-semibold text-cyan-100')}>
                 {step.move_notation}
               </span>
-              {isDone && <span className="ml-auto text-green-500 text-xs">✓</span>}
+
+              {isDone && <span className="ml-auto text-[11px] uppercase tracking-wide text-emerald-300">done</span>}
+              {isActive && <span className="ml-auto text-[11px] uppercase tracking-wide text-cyan-300">active</span>}
+              {!isDone && !isActive && <span className="ml-auto text-[11px] uppercase tracking-wide text-kl-outline">queued</span>}
             </div>
           );
         })}

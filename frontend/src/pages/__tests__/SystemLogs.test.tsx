@@ -12,14 +12,21 @@ vi.mock('@/lib/api', () => ({
 }));
 
 describe('SystemLogs', () => {
-  it('renders fetched logs with count and severity badges', async () => {
+  it('renders activity console header and fatal/error scan counts', async () => {
     const logs: SystemLog[] = [
       {
         id: 1,
         node_id: 'solver',
-        severity: 'warning',
-        message: 'Queue depth increased',
+        severity: 'fatal',
+        message: 'Solver thread panic detected',
         created_at: '2026-03-27T12:00:00Z',
+      },
+      {
+        id: 2,
+        node_id: 'scanner',
+        severity: 'error',
+        message: 'Scanner queue overflow',
+        created_at: '2026-03-27T12:00:05Z',
       },
     ];
 
@@ -27,18 +34,21 @@ describe('SystemLogs', () => {
 
     renderWithAppProviders(<SystemLogs />, { route: '/logs' });
 
-    expect(await screen.findByText('1 entries')).toBeInTheDocument();
-    expect(screen.getByText('Queue depth increased')).toBeInTheDocument();
-    expect(screen.getByText('warning')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'System Activity Console' })).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('1 / 1')).toBeInTheDocument();
+    expect(screen.getByText('Solver thread panic detected')).toBeInTheDocument();
+    expect(screen.getByText('fatal')).toBeInTheDocument();
   });
 
-  it('shows empty-state presentation when no logs are returned', async () => {
+  it('keeps empty state mounted inside the stream container', async () => {
     mockGetLogs.mockResolvedValueOnce([]);
 
     renderWithAppProviders(<SystemLogs />, { route: '/logs' });
 
     expect(await screen.findByText('No log entries')).toBeInTheDocument();
-    expect(screen.getByText('Events will appear here once a solve runs.')).toBeInTheDocument();
+    expect(screen.getByText('Awaiting activity from execution services.')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'System Log Stream' })).toBeInTheDocument();
   });
 
   it('refetches logs when severity filter changes', async () => {
@@ -51,6 +61,6 @@ describe('SystemLogs', () => {
 
     await user.click(screen.getByRole('radio', { name: 'Error' }));
 
-    expect(mockGetLogs).toHaveBeenCalledWith('error', undefined);
+    expect(mockGetLogs).toHaveBeenLastCalledWith('error', undefined);
   });
 });
