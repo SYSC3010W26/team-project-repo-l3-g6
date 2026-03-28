@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import MoveList from '@/components/review/MoveList';
 import StepNavigator from '@/components/review/StepNavigator';
-import { getSolution, getSessions } from '@/lib/api';
+import CubeViewer3D from '@/components/dashboard/CubeViewer3D';
+import { getSolution, getSessions, getScanState } from '@/lib/api';
+import { applyMove, SOLVED_STATE } from '@/lib/cube';
 
 export default function SolutionReview() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -21,15 +23,34 @@ export default function SolutionReview() {
 
   const effectiveSessionId = sessionId || sessions?.[0]?.session_id;
 
-  const { data: solution, isLoading: solutionLoading, isError } = useQuery({
+  // Reset step when navigating to a new session
+  useEffect(() => {
+    setCurrentStep(0);
+  }, [effectiveSessionId]);
+
+  const { data: solution, isLoading: solutionLoading, isError: isSolutionError } = useQuery({
     queryKey: ['solution', effectiveSessionId],
     queryFn: () => getSolution(effectiveSessionId!.toString()),
     enabled: !!effectiveSessionId,
   });
 
-  const isLoading = (sessionsLoading && !sessionId) || (solutionLoading && !!effectiveSessionId);
+  const { data: scanStateData, isLoading: scanLoading } = useQuery({
+    queryKey: ['scan', effectiveSessionId],
+    queryFn: () => getScanState(effectiveSessionId!.toString()),
+    enabled: !!effectiveSessionId,
+  });
+
+  const isLoading = (sessionsLoading && !sessionId) || (solutionLoading && !!effectiveSessionId) || (scanLoading && !!effectiveSessionId);
 
   const steps = solution?.steps ?? [];
+
+  // Derive current cube state based on steps taken
+  let currentCubeState = scanStateData?.state || SOLVED_STATE;
+  if (steps.length > 0 && currentStep > 0) {
+    for (let i = 0; i < currentStep; i++) {
+      currentCubeState = applyMove(currentCubeState, steps[i].move_notation);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -40,7 +61,7 @@ export default function SolutionReview() {
     );
   }
 
-  if (isError || !solution) {
+  if (isSolutionError || !solution) {
     return (
       <div className="text-center py-16">
         <p className="text-slate-400">Session not found.</p>
@@ -82,13 +103,19 @@ export default function SolutionReview() {
         )}
       </div>
 
-      <MoveList steps={steps} currentStep={currentStep} />
-
-      <StepNavigator
-        total={steps.length}
-        current={currentStep}
-        onStep={setCurrentStep}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        <div className="sticky top-6">
+          <CubeViewer3D stateString={currentCubeState} />
+        </div>
+        <div className="space-y-6">
+          <MoveList steps={steps} currentStep={currentStep} />
+          <StepNavigator
+            total={steps.length}
+            current={currentStep}
+            onStep={setCurrentStep}
+          />
+        </div>
+      </div>
     </div>
   );
 }

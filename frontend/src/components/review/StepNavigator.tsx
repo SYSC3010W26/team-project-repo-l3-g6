@@ -15,7 +15,7 @@ export default function StepNavigator({ total, current, onStep }: Props) {
     if (playing) {
       intervalRef.current = setInterval(() => {
         onStep((prev: number) => {
-          if (prev >= total - 1) {
+          if (prev >= total) {
             setPlaying(false);
             return prev;
           }
@@ -56,15 +56,15 @@ export default function StepNavigator({ total, current, onStep }: Props) {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => onStep(Math.min(total - 1, current + 1))}
-          disabled={current >= total - 1}
+          onClick={() => onStep(Math.min(total, current + 1))}
+          disabled={current >= total}
           className="border-kl-outline-variant text-kl-on-surface-variant hover:bg-kl-surface-high"
           aria-label="Next step"
         >
           <span className="material-symbols-outlined text-base" aria-hidden="true">chevron_right</span>
         </Button>
         <span className="font-mono text-sm text-kl-on-surface-variant">
-          Step {current + 1} / {total || 1}
+          Step {current} / {total}
         </span>
       </div>
     </div>
