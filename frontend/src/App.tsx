@@ -14,7 +14,7 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: 'results', element: <SolveResults /> },
       { path: 'execution', element: <ExecutionMonitor /> },
-      { path: 'review/:sessionId', element: <SolutionReview /> },
+      { path: 'review/:sessionId?', element: <SolutionReview /> },
       { path: 'logs', element: <SystemLogs /> },
     ],
   },

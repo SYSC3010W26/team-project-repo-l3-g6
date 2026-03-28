@@ -7,17 +7,27 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import MoveList from '@/components/review/MoveList';
 import StepNavigator from '@/components/review/StepNavigator';
-import { getSolution } from '@/lib/api';
+import { getSolution, getSessions } from '@/lib/api';
 
 export default function SolutionReview() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const [currentStep, setCurrentStep] = useState<number>(0);
 
-  const { data: solution, isLoading, isError } = useQuery({
-    queryKey: ['solution', sessionId],
-    queryFn: () => getSolution(sessionId!),
-    enabled: !!sessionId,
+  const { data: sessions, isLoading: sessionsLoading } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: getSessions,
+    enabled: !sessionId,
   });
+
+  const effectiveSessionId = sessionId || sessions?.[0]?.session_id;
+
+  const { data: solution, isLoading: solutionLoading, isError } = useQuery({
+    queryKey: ['solution', effectiveSessionId],
+    queryFn: () => getSolution(effectiveSessionId!.toString()),
+    enabled: !!effectiveSessionId,
+  });
+
+  const isLoading = (sessionsLoading && !sessionId) || (solutionLoading && !!effectiveSessionId);
 
   const steps = solution?.steps ?? [];
 
@@ -49,7 +59,7 @@ export default function SolutionReview() {
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.22em] text-kl-secondary">PI³</p>
           <h1 className="font-space-grotesk text-3xl font-semibold text-kl-on-surface">Solution Review</h1>
-          <p className="font-mono text-xs text-kl-on-surface-variant">Session #{sessionId}</p>
+          <p className="font-mono text-xs text-kl-on-surface-variant">Session #{effectiveSessionId}</p>
         </div>
         <Link to="/results">
           <Button variant="outline" className="border-kl-outline-variant text-kl-on-surface-variant hover:bg-kl-surface-high">

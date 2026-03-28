@@ -1,5 +1,7 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { startSolve } from '@/lib/api';
 
 const navItems = [
   { to: '/',          icon: 'precision_manufacturing', label: 'Live Session',      end: true },
@@ -10,6 +12,17 @@ const navItems = [
 ];
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { mutate: doNewSolve, isPending } = useMutation({
+    mutationFn: startSolve,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      navigate('/');
+    },
+  });
+
   return (
     <aside className="h-screen w-64 fixed left-0 top-0 pt-20 bg-kl-surface-low hidden lg:flex flex-col z-40 shadow-2xl shadow-black/40">
       {/* Branding */}
@@ -44,12 +57,14 @@ export default function Sidebar() {
 
       {/* Bottom Section */}
       <div className="px-6 pb-6 space-y-4">
-        <NavLink to="/">
-          <button className="w-full bg-kl-primary text-[#3C0089] font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-95 glow-primary font-headline">
-            <span className="material-symbols-outlined">add</span>
-            <span>NEW SOLVE</span>
-          </button>
-        </NavLink>
+        <button
+          onClick={() => doNewSolve()}
+          disabled={isPending}
+          className="w-full bg-kl-primary text-[#3C0089] font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-95 glow-primary font-headline disabled:opacity-50"
+        >
+          <span className="material-symbols-outlined">add</span>
+          <span>{isPending ? 'STARTING...' : 'NEW SOLVE'}</span>
+        </button>
 
         <div className="pt-4 border-t border-kl-outline-variant/10 space-y-1">
           <a href="#" className="text-kl-outline hover:text-white text-[10px] tracking-widest uppercase flex items-center gap-2">
