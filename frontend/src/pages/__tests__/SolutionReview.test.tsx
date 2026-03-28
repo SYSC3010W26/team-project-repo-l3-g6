@@ -93,7 +93,7 @@ describe('SolutionReview', () => {
       };
     });
 
-    const { getByText, findByText } = render(
+    const { findByText } = render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={['/review/7']}>
           <Routes>
@@ -118,7 +118,7 @@ describe('SolutionReview', () => {
     const user = userEvent.setup();
     const queryClient = createTestQueryClient();
 
-    mockGetSolution.mockImplementation(async (id: string) => ({
+    mockGetSolution.mockImplementation(async () => ({
       algorithm_used: 'Kociemba',
       steps: [{ step_index: 0, move_notation: 'R' }, { step_index: 1, move_notation: 'U' }],
     }));

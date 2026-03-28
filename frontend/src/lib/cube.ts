@@ -48,3 +48,15 @@ export function applyMove(stateString: string, move: string): string {
 
   return state.join('');
 }
+
+/**
+ * Returns the inverse of a single WCA move.
+ * @param move Single move (e.g. "U", "R'", "F2")
+ * @returns Inverse move
+ */
+export function getInverseMove(move: string): string {
+  if (!move) return '';
+  if (move.endsWith("'")) return move.slice(0, -1);
+  if (move.endsWith("2")) return move;
+  return move + "'";
+}

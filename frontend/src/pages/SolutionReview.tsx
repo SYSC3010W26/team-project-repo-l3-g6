@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -9,11 +9,13 @@ import MoveList from '@/components/review/MoveList';
 import StepNavigator from '@/components/review/StepNavigator';
 import CubeViewer3D from '@/components/dashboard/CubeViewer3D';
 import { getSolution, getSessions, getScanState } from '@/lib/api';
-import { applyMove, SOLVED_STATE } from '@/lib/cube';
+import { applyMove, SOLVED_STATE, getInverseMove } from '@/lib/cube';
 
 export default function SolutionReview() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const [animatingMove, setAnimatingMove] = useState<string | undefined>(undefined);
+  const prevStepRef = useRef<number>(0);
 
   const { data: sessions, isLoading: sessionsLoading } = useQuery({
     queryKey: ['sessions'],
@@ -43,6 +45,22 @@ export default function SolutionReview() {
   const isLoading = (sessionsLoading && !sessionId) || (solutionLoading && !!effectiveSessionId) || (scanLoading && !!effectiveSessionId);
 
   const steps = solution?.steps ?? [];
+
+  // Animation detection: detect single step increments/decrements
+  useEffect(() => {
+    const prevStep = prevStepRef.current;
+    if (currentStep === prevStep + 1 && steps[prevStep]) {
+      // Moving forward one step: animate current move
+      setAnimatingMove(steps[prevStep].move_notation);
+    } else if (currentStep === prevStep - 1 && steps[currentStep]) {
+      // Moving backward one step: animate inverse of undone move
+      setAnimatingMove(getInverseMove(steps[currentStep].move_notation));
+    } else if (currentStep !== prevStep) {
+      // Jumps/resets: no animation
+      setAnimatingMove(undefined);
+    }
+    prevStepRef.current = currentStep;
+  }, [currentStep, steps]);
 
   // Derive current cube state based on steps taken
   let currentCubeState = scanStateData?.state || SOLVED_STATE;
@@ -105,7 +123,7 @@ export default function SolutionReview() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
         <div className="sticky top-6">
-          <CubeViewer3D stateString={currentCubeState} />
+          <CubeViewer3D stateString={currentCubeState} animatingMove={animatingMove} />
         </div>
         <div className="space-y-6">
           <MoveList steps={steps} currentStep={currentStep} />
