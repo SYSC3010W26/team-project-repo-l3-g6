@@ -14,10 +14,10 @@ export default function Sidebar() {
     <aside className="h-screen w-64 fixed left-0 top-0 pt-20 bg-kl-surface-low hidden lg:flex flex-col z-40 shadow-2xl shadow-black/40">
       {/* Branding */}
       <div className="px-6 py-4 mb-4">
-        <div className="text-lg font-headline font-bold text-white uppercase tracking-wider">
-          KINETIC LAB
+        <div className="font-headline text-2xl font-bold tracking-tight text-kl-primary drop-shadow-[0_0_14px_rgba(189,157,255,0.35)]">
+          PI³
         </div>
-        <div className="text-xs text-kl-secondary opacity-70">Precision v2.4</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-kl-secondary/80">Precision v2.4</div>
       </div>
 
       {/* Navigation */}

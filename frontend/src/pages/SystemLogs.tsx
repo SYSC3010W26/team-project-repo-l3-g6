@@ -29,7 +29,7 @@ export default function SystemLogs() {
       <header className="rounded-2xl border border-cyan-500/25 bg-slate-950/70 p-6 shadow-[0_0_60px_rgba(34,211,238,0.08)] backdrop-blur-md">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-300/80">Kinetic Lab</p>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-300/80">PI³</p>
             <h1 className="font-mono text-2xl font-semibold text-cyan-100">System Activity Console</h1>
             <p className="text-sm text-slate-300/80">
               Live operator feed from scanner, solver, motor, and persistence nodes.

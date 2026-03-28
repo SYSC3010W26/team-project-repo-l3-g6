@@ -22,6 +22,7 @@ import time
 import threading
 import sys
 import os
+import argparse
 
 # Use central config if available, otherwise fall back to env/defaults
 try:
@@ -69,7 +70,7 @@ def heartbeat_loop(nodes: list[str], stop_event: threading.Event):
         stop_event.wait(HEARTBEAT_INTERVAL)
 
 
-def run_demo():
+def run_demo(keep_alive: bool = True):
     print(f"🎯 Pi³ Demo Simulator")
     print(f"   Server: {API}")
     print()
@@ -159,9 +160,14 @@ def run_demo():
     if r.status_code == 200:
         print(f"   Status → done ✅")
 
-    print("\n🎉 Demo complete! Check the dashboard at http://localhost:5173")
-    print("   Heartbeats will continue running. Press Ctrl+C to stop.")
+    print("\n🎉 Demo complete! Check the dashboard at http://localhost:4173")
 
+    if not keep_alive:
+        stop.set()
+        print("✅ One-shot mode complete. Exiting.")
+        return
+
+    print("   Heartbeats will continue running. Press Ctrl+C to stop.")
     try:
         while True:
             time.sleep(1)
@@ -171,4 +177,12 @@ def run_demo():
 
 
 if __name__ == "__main__":
-    run_demo()
+    parser = argparse.ArgumentParser(description="Simulate PI³ scan→solve→execute demo flow")
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Run the full flow once and exit (for local e2e/CI checks)",
+    )
+    args = parser.parse_args()
+
+    run_demo(keep_alive=not args.once)

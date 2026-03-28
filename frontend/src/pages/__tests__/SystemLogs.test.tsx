@@ -35,9 +35,9 @@ describe('SystemLogs', () => {
     renderWithAppProviders(<SystemLogs />, { route: '/logs' });
 
     expect(await screen.findByRole('heading', { name: 'System Activity Console' })).toBeInTheDocument();
+    expect(await screen.findByText('Solver thread panic detected')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getByText('1 / 1')).toBeInTheDocument();
-    expect(screen.getByText('Solver thread panic detected')).toBeInTheDocument();
     expect(screen.getByText('fatal')).toBeInTheDocument();
   });
 

@@ -10,11 +10,43 @@ All DB access via database.crud functions through Depends(get_db_dep).
 from fastapi import APIRouter, Depends, HTTPException
 import sqlite3
 from database import crud
-from database.models import SolutionCreate
+from database.models import SolutionCreate, SolutionStepCreate
 from backend.deps import get_db_dep
 from backend import schemas
 
 router = APIRouter()
+
+
+def parse_moves(solution_string: str) -> list[dict]:
+    """Parse a Rubik's cube solution string into a list of step data."""
+    if not solution_string:
+        return []
+
+    moves = solution_string.split()
+    steps = []
+    for i, move in enumerate(moves):
+        # Move format: F, F', F2, F2'
+        face = move[0]
+        direction = "CW"
+        degrees = 90
+
+        if len(move) > 1:
+            suffix = move[1:]
+            if suffix == "2":
+                degrees = 180
+            elif suffix == "'":
+                direction = "CCW"
+            elif suffix == "2'":
+                degrees = 180
+                direction = "CCW"
+
+        steps.append({
+            "step_index": i,
+            "face": face,
+            "direction": direction,
+            "degrees": degrees
+        })
+    return steps
 
 
 @router.post("/submit", response_model=schemas.SolveSubmitResponse)
@@ -22,6 +54,8 @@ def submit_solution(body: schemas.SolveSubmitRequest, conn: sqlite3.Connection =
     session = crud.get_solve_session_by_id(conn, body.session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {body.session_id} not found")
+
+    # Create the solution record
     data = SolutionCreate(
         session_id=body.session_id,
         algorithm_used=body.algorithm_used,
@@ -29,6 +63,18 @@ def submit_solution(body: schemas.SolveSubmitRequest, conn: sqlite3.Connection =
         solution_string=body.solution_string,
     )
     solution_id = crud.create_solution(conn, data)
+
+    # Parse and store individual steps
+    steps_data = parse_moves(body.solution_string)
+    for step in steps_data:
+        crud.create_solution_step(
+            conn,
+            SolutionStepCreate(
+                solution_id=solution_id,
+                **step
+            )
+        )
+
     crud.update_solve_session_status(conn, body.session_id, "solving")
     return schemas.SolveSubmitResponse(solution_id=solution_id)
 
@@ -40,13 +86,17 @@ def get_solution(session_id: int, conn: sqlite3.Connection = Depends(get_db_dep)
         raise HTTPException(status_code=404, detail=f"No solution for session {session_id}")
     latest = rows[-1]
     step_rows = crud.get_solution_steps_by_solution(conn, latest["id"])
-    steps = [
-        schemas.SolutionStepResponse(
+    steps = []
+    for s in step_rows:
+        notation = s["face"]
+        if s["degrees"] == 180:
+            notation += "2"
+        if s["direction"] == "CCW":
+            notation += "'"
+        steps.append(schemas.SolutionStepResponse(
             step_index=s["step_index"],
-            move_notation=f"{s['face']} {s['direction']}",
-        )
-        for s in step_rows
-    ]
+            move_notation=notation,
+        ))
     return schemas.SolveResultResponse(
         session_id=latest["session_id"],
         solution_id=latest["id"],

@@ -85,7 +85,7 @@ export default function Dashboard() {
       <header className="rounded-2xl border border-kl-outline-variant bg-kl-surface-low p-5 md:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-kl-on-surface-variant">Kinetic Lab Console</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-kl-on-surface-variant">PI³ Console</p>
             <h1 className="mt-2 text-2xl font-semibold text-kl-on-surface md:text-3xl">Active Session</h1>
             <p className="mt-2 text-sm text-kl-on-surface-variant">
               Real-time pipeline monitoring, node status, and execution activity for the current solve.

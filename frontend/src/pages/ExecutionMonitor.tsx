@@ -45,7 +45,7 @@ export default function ExecutionMonitor() {
     return (
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.22em] text-kl-secondary">KINETIC LAB</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-kl-secondary">PI³</p>
           <h1 className="font-space-grotesk text-3xl font-semibold text-kl-on-surface">Execution Monitor</h1>
         </div>
 
@@ -67,7 +67,7 @@ export default function ExecutionMonitor() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.22em] text-kl-secondary">KINETIC LAB</p>
+        <p className="text-xs uppercase tracking-[0.22em] text-kl-secondary">PI³</p>
         <h1 className="font-space-grotesk text-3xl font-semibold text-kl-on-surface">Execution Monitor</h1>
         {sessionId && <p className="font-mono text-xs text-kl-on-surface-variant">Session #{sessionId}</p>}
       </div>

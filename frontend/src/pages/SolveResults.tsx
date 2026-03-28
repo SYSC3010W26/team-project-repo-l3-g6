@@ -14,7 +14,7 @@ export default function SolveResults() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <header className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/10 via-white/5 to-slate-900/50 p-6 backdrop-blur-xl">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan-300/80">Kinetic Lab</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan-300/80">PI³</p>
         <h1 className="mt-2 text-3xl font-semibold text-white">Solve Results</h1>
         <p className="mt-2 text-sm text-slate-300">
           Review recent solve sessions, inspect outcomes, and open any run for full step-by-step playback.

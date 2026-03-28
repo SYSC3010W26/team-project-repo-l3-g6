@@ -66,8 +66,8 @@ def test_solve_response_has_steps_key(client):
     assert isinstance(body["steps"], list)
 
 
-def test_solve_steps_empty_when_no_steps_inserted(client):
-    """When no solution steps inserted, steps is [] (not missing/null)."""
+def test_solve_steps_populated_on_submit(client):
+    """When a solution is submitted, steps are automatically populated."""
     session_id = client.post("/jobs/start", json={}).json()["session_id"]
     client.post("/solve/submit", json={
         "session_id": session_id,
@@ -77,35 +77,18 @@ def test_solve_steps_empty_when_no_steps_inserted(client):
     })
     r = client.get(f"/solve/{session_id}")
     assert r.status_code == 200
-    assert r.json()["steps"] == []
+    assert len(r.json()["steps"]) == 2
 
 
 def test_solve_steps_have_step_index_and_move_notation(client):
     """Each step in the steps list has step_index (int) and move_notation (str)."""
-    import database.db as db_module
-    from database.crud import create_solution_step
-    from database.models import SolutionStepCreate
-
     session_id = client.post("/jobs/start", json={}).json()["session_id"]
-    sol_resp = client.post("/solve/submit", json={
+    client.post("/solve/submit", json={
         "session_id": session_id,
         "algorithm_used": "CFOP",
         "move_count": 1,
         "solution_string": "R",
     })
-    solution_id = sol_resp.json()["solution_id"]
-
-    # Insert a solution step directly into the DB
-    conn = db_module.get_db()
-    create_solution_step(conn, SolutionStepCreate(
-        solution_id=solution_id,
-        step_index=0,
-        face="R",
-        direction="clockwise",
-        degrees=90,
-    ))
-    conn.commit()
-    conn.close()
 
     r = client.get(f"/solve/{session_id}")
     assert r.status_code == 200
@@ -119,7 +102,7 @@ def test_solve_steps_have_step_index_and_move_notation(client):
 
 
 def test_solve_step_move_notation_format(client):
-    """move_notation is constructed as '{face} {direction}'."""
+    """move_notation is constructed using standard notation."""
     import database.db as db_module
     from database.crud import create_solution_step
     from database.models import SolutionStepCreate
@@ -128,8 +111,8 @@ def test_solve_step_move_notation_format(client):
     sol_resp = client.post("/solve/submit", json={
         "session_id": session_id,
         "algorithm_used": "CFOP",
-        "move_count": 1,
-        "solution_string": "U",
+        "move_count": 0,
+        "solution_string": "",
     })
     solution_id = sol_resp.json()["solution_id"]
 
@@ -138,7 +121,7 @@ def test_solve_step_move_notation_format(client):
         solution_id=solution_id,
         step_index=0,
         face="U",
-        direction="counterclockwise",
+        direction="CCW",
         degrees=90,
     ))
     conn.commit()
@@ -147,7 +130,7 @@ def test_solve_step_move_notation_format(client):
     r = client.get(f"/solve/{session_id}")
     assert r.status_code == 200
     steps = r.json()["steps"]
-    assert steps[0]["move_notation"] == "U counterclockwise"
+    assert steps[0]["move_notation"] == "U'"
 
 
 # ---------------------------------------------------------------------------

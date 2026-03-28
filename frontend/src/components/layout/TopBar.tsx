@@ -7,14 +7,14 @@ export default function TopBar() {
   return (
     <header className="fixed top-0 w-full z-50 glass flex justify-between items-center px-8 py-4">
       {/* Brand */}
-      <div className="text-2xl font-bold tracking-tighter text-kl-primary uppercase font-headline">
-        RUBIK'S SOLVER
+      <div className="font-headline text-3xl font-bold tracking-tight text-kl-primary drop-shadow-[0_0_18px_rgba(189,157,255,0.45)]">
+        PI³
       </div>
 
       {/* Center Nav — hidden on mobile */}
       <nav className="hidden md:flex space-x-8">
         <span className="text-kl-on-surface-variant font-headline tracking-tight text-sm">
-          Pi³ Autonomous Platform
+          Autonomous Solve Platform
         </span>
       </nav>
 
