@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
-import SolutionReview from '@/pages/SolutionReview';
+import SolutionReview from '../SolutionReview';
 import { createTestQueryClient } from '@/test/renderApp';
 import type { SolutionStep } from '@/types/api';
 

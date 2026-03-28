@@ -15,13 +15,27 @@ const COLOR_MAP: Record<string, string> = {
   B: '#0055ff', // blue
 };
 
-interface StickerProps {
-  position: [number, number, number];
-  rotation: [number, number, number];
+type FaceKey = 'U' | 'D' | 'L' | 'R' | 'F' | 'B';
+
+interface CubeletStickerProps {
+  face: FaceKey;
   color: string;
 }
 
-function Sticker({ position, rotation, color }: StickerProps) {
+function CubeletSticker({ face, color }: CubeletStickerProps) {
+  let position: [number, number, number] = [0, 0, 0];
+  let rotation: [number, number, number] = [0, 0, 0];
+  const offset = 0.501;
+
+  switch (face) {
+    case 'U': position = [0, offset, 0]; rotation = [-Math.PI / 2, 0, 0]; break;
+    case 'D': position = [0, -offset, 0]; rotation = [Math.PI / 2, 0, 0]; break;
+    case 'L': position = [-offset, 0, 0]; rotation = [0, -Math.PI / 2, 0]; break;
+    case 'R': position = [offset, 0, 0]; rotation = [0, Math.PI / 2, 0]; break;
+    case 'F': position = [0, 0, offset]; rotation = [0, 0, 0]; break;
+    case 'B': position = [0, 0, -offset]; rotation = [0, Math.PI, 0]; break;
+  }
+
   return (
     <mesh position={position} rotation={rotation}>
       {/* Slightly smaller than 1 unit to leave thin black gap between stickers */}
@@ -31,73 +45,79 @@ function Sticker({ position, rotation, color }: StickerProps) {
   );
 }
 
-interface FaceProps {
-  /** 9-char face string, e.g. "UUUUUUUUU" */
-  faceChars: string;
-  /** Offset from cube center along the face's normal axis (+0.51 so stickers sit on surface) */
-  normalOffset: number;
-  /** Euler rotation to orient this face outward */
-  rotation: [number, number, number];
-  /** Base position (center of face) before per-sticker offset */
-  basePosition: [number, number, number];
+interface CubeletData {
+  position: [number, number, number];
+  stickers: {
+    face: FaceKey;
+    color: string;
+  }[];
 }
 
-function Face({ faceChars, rotation, basePosition }: FaceProps) {
-  const stickers: React.ReactElement[] = [];
-  for (let row = 0; row < 3; row++) {
-    for (let col = 0; col < 3; col++) {
-      const idx = row * 3 + col;
-      const char = faceChars[idx] ?? 'U';
-      const color = COLOR_MAP[char] ?? '#888888';
-      // Place sticker at col offset (-1, 0, 1) and row offset (-1, 0, 1) in face-local space
-      // The basePosition already encodes the face's outward shift; sticker offsets are perpendicular
-      const [bx, by, bz] = basePosition;
-      // We'll compute position relative to face orientation using the rotation angles
-      // Since faces are axis-aligned, we can determine the two tangent axes from the rotation:
-      const colOffset = col - 1; // -1, 0, +1
-      const rowOffset = 1 - row; // +1, 0, -1 (flip so row 0 = top)
-      let px = bx;
-      let py = by;
-      let pz = bz;
+function Cubelet({ position, stickers }: CubeletData) {
+  return (
+    <group position={position}>
+      {/* Black cube body for this cubelet */}
+      <mesh>
+        <boxGeometry args={[0.98, 0.98, 0.98]} />
+        <meshStandardMaterial color="#111111" />
+      </mesh>
+      {stickers.map((s, i) => (
+        <CubeletSticker key={i} face={s.face} color={s.color} />
+      ))}
+    </group>
+  );
+}
 
-      // Determine tangent axes based on face rotation
-      const [rx] = rotation;
-      if (Math.abs(rx) < 0.1) {
-        // Front (z+) or Back (z-): tangents are X and Y
-        px += colOffset;
-        py += rowOffset;
-      } else if (Math.abs(rx - Math.PI / 2) < 0.1 || Math.abs(rx + Math.PI / 2) < 0.1) {
-        // Top (rx = -π/2) or Bottom (rx = π/2): tangents are X and Z
-        px += colOffset;
-        pz += (rx < 0 ? rowOffset : -rowOffset);
-      } else {
-        // Left or Right (ry = ±π/2): tangents are Z and Y
-        const [, ry] = rotation;
-        pz += (ry > 0 ? -colOffset : colOffset);
-        py += rowOffset;
+function getCubeletsFromState(stateStr: string): CubeletData[] {
+  const s = stateStr.length === 54 ? stateStr : SOLVED_STATE;
+  const cubelets: CubeletData[] = [];
+
+  for (let x = -1; x <= 1; x++) {
+    for (let y = -1; y <= 1; y++) {
+      for (let z = -1; z <= 1; z++) {
+        if (x === 0 && y === 0 && z === 0) continue;
+
+        const stickers: { face: FaceKey; color: string }[] = [];
+
+        // Up face (y=1): WCA indices 0-8
+        if (y === 1) {
+          const idx = 3 * (z + 1) + (x + 1);
+          stickers.push({ face: 'U', color: COLOR_MAP[s[idx]] || '#888888' });
+        }
+        // Down face (y=-1): WCA indices 27-35
+        if (y === -1) {
+          const idx = 27 + 3 * (1 - z) + (x + 1);
+          stickers.push({ face: 'D', color: COLOR_MAP[s[idx]] || '#888888' });
+        }
+        // Front face (z=1): WCA indices 18-26
+        if (z === 1) {
+          const idx = 18 + 3 * (1 - y) + (x + 1);
+          stickers.push({ face: 'F', color: COLOR_MAP[s[idx]] || '#888888' });
+        }
+        // Back face (z=-1): WCA indices 45-53
+        if (z === -1) {
+          const idx = 45 + 3 * (1 - y) + (1 - x);
+          stickers.push({ face: 'B', color: COLOR_MAP[s[idx]] || '#888888' });
+        }
+        // Right face (x=1): WCA indices 9-17
+        if (x === 1) {
+          const idx = 9 + 3 * (1 - y) + (1 - z);
+          stickers.push({ face: 'R', color: COLOR_MAP[s[idx]] || '#888888' });
+        }
+        // Left face (x=-1): WCA indices 36-44
+        if (x === -1) {
+          const idx = 36 + 3 * (1 - y) + (z + 1);
+          stickers.push({ face: 'L', color: COLOR_MAP[s[idx]] || '#888888' });
+        }
+
+        cubelets.push({
+          position: [x, y, z],
+          stickers
+        });
       }
-
-      stickers.push(
-        <Sticker
-          key={idx}
-          position={[px, py, pz]}
-          rotation={rotation}
-          color={color}
-        />
-      );
     }
   }
-  return <>{stickers}</>;
-}
-
-// Black cube body (so gaps between stickers show as black)
-function CubeBody() {
-  return (
-    <mesh>
-      <boxGeometry args={[3.05, 3.05, 3.05]} />
-      <meshStandardMaterial color="#111111" />
-    </mesh>
-  );
+  return cubelets;
 }
 
 interface CubeSceneProps {
@@ -105,35 +125,15 @@ interface CubeSceneProps {
 }
 
 function CubeScene({ stateStr }: CubeSceneProps) {
-  const s = stateStr.length === 54 ? stateStr : SOLVED_STATE;
-
-  // Face slices: U=0-8, R=9-17, F=18-26, D=27-35, L=36-44, B=45-53
-  const U = s.slice(0, 9);
-  const R = s.slice(9, 18);
-  const F = s.slice(18, 27);
-  const D = s.slice(27, 36);
-  const L = s.slice(36, 45);
-  const B = s.slice(45, 54);
-
-  const OFFSET = 1.51; // face sits just outside the 3-unit cube (±1.5 half-extent + 0.01)
+  const cubelets = getCubeletsFromState(stateStr);
 
   return (
     <>
       <ambientLight intensity={0.8} />
       <directionalLight position={[5, 5, 5]} intensity={0.6} />
-      <CubeBody />
-      {/* Front face: +Z, no rotation */}
-      <Face faceChars={F} normalOffset={OFFSET} rotation={[0, 0, 0]} basePosition={[0, 0, OFFSET]} />
-      {/* Back face: -Z, rotate 180° around Y */}
-      <Face faceChars={B} normalOffset={OFFSET} rotation={[0, Math.PI, 0]} basePosition={[0, 0, -OFFSET]} />
-      {/* Up face: +Y, rotate -90° around X */}
-      <Face faceChars={U} normalOffset={OFFSET} rotation={[-Math.PI / 2, 0, 0]} basePosition={[0, OFFSET, 0]} />
-      {/* Down face: -Y, rotate +90° around X */}
-      <Face faceChars={D} normalOffset={OFFSET} rotation={[Math.PI / 2, 0, 0]} basePosition={[0, -OFFSET, 0]} />
-      {/* Right face: +X, rotate 90° around Y */}
-      <Face faceChars={R} normalOffset={OFFSET} rotation={[0, Math.PI / 2, 0]} basePosition={[OFFSET, 0, 0]} />
-      {/* Left face: -X, rotate -90° around Y */}
-      <Face faceChars={L} normalOffset={OFFSET} rotation={[0, -Math.PI / 2, 0]} basePosition={[-OFFSET, 0, 0]} />
+      {cubelets.map((c, i) => (
+        <Cubelet key={i} position={c.position} stickers={c.stickers} />
+      ))}
     </>
   );
 }
