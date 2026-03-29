@@ -69,6 +69,10 @@ class ScanResultResponse(BaseModel):
 # Solve
 # ---------------------------------------------------------------------------
 
+class SolveStartRequest(BaseModel):
+    session_id: int
+
+
 class SolveSubmitRequest(BaseModel):
     session_id: int
     algorithm_used: str
