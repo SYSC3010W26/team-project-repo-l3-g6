@@ -17,6 +17,7 @@ python-dotenv
 
 # Testing
 pytest
+pytest-playwright
 
 # Real-time Socket.IO server (ASGI mount with FastAPI)
 python-socketio
