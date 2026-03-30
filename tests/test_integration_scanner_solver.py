@@ -14,7 +14,7 @@ SYSC3010 L3-G6
 
 import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, AsyncMock
 
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -23,6 +23,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # ─────────────────────────────────────────────────────────────────────────────
 # FIXTURES
 # ─────────────────────────────────────────────────────────────────────────────
+
+@pytest.fixture
+def anyio_backend():
+    return 'asyncio'
 
 @pytest.fixture
 def valid_state_string():
@@ -41,7 +45,8 @@ def test_session_id():
 class TestScannerSolverIntegration:
     """Integration tests for scanner → API → solver pipeline."""
     
-    def test_full_workflow_session_scan_verify(
+    @pytest.mark.anyio
+    async def test_full_workflow_session_scan_verify(
         self, 
         valid_state_string, 
         test_session_id
@@ -51,7 +56,8 @@ class TestScannerSolverIntegration:
         1. Create session
         2. Submit scan
         3. Verify DB state
-        4. Verify solution would be computed
+        4. Acknowledge solve request
+        5. Submit solution (external)
         """
         
         print(f"\n[INTEGRATION TEST] Scanner → API → Solver Pipeline")
@@ -135,36 +141,53 @@ class TestScannerSolverIntegration:
             print(f"    Valid: {response.is_valid}, Confidence: {response.confidence:.1%}")
         
         # ───────────────────────────────────────────────────────────────
-        # STEP 4: Verify solution path
+        # STEP 4: Start solving (Acknowledge)
         # ───────────────────────────────────────────────────────────────
-        print(f"\nSTEP 4: Verify solution would be computed")
+        print(f"\nSTEP 4: Acknowledge solve request (POST /solve/start)")
         
-        # State string is valid for solver input
-        try:
-            assert len(valid_state_string) == 54
-            assert "?" not in valid_state_string
-            assert all(c in "WYROBG" for c in valid_state_string)
-            print(f"  ✓ State string valid for solver input")
-            print(f"    Format: 54 chars, no unknowns, valid colours only")
-        except Exception as e:
-            print(f"  ✗ State validation failed: {e}")
-            raise
+        from backend.routers.solve import start_solve
+        from backend.schemas import SolveStartRequest
         
-        # ───────────────────────────────────────────────────────────────
-        # STEP 5: Verify solution storage
-        # ───────────────────────────────────────────────────────────────
-        print(f"\nSTEP 5: Verify solution storage flow")
-        
-        with patch("backend.routers.solve.crud") as mock_crud:
+        with patch("backend.routers.solve.crud") as mock_crud, \
+             patch("backend.routers.solve.sio", new_callable=AsyncMock) as mock_sio:
             mock_crud.get_solve_session_by_id.return_value = {"id": test_session_id}
             mock_crud.get_cube_states_by_session.return_value = [
                 {"session_id": test_session_id, "state_string": valid_state_string, "is_valid": True}
             ]
-            mock_crud.create_solution.return_value = 789
-            mock_crud.update_solve_session_status.return_value = None
             
-            print(f"  ✓ Solution would be stored: solution_id=789")
-            print(f"    Status transition: pending → solving → solved")
+            request = SolveStartRequest(session_id=test_session_id)
+            response = await start_solve(request, mock_db)
+            
+            assert response.session_id == test_session_id
+            assert response.status == "solving"
+            mock_crud.update_solve_session_status.assert_called_with(mock_db, test_session_id, "solving")
+            print(f"  ✓ Solve acknowledged: session_id={test_session_id}, status={response.status}")
+        
+        # ───────────────────────────────────────────────────────────────
+        # STEP 5: Submit solution (from external solver)
+        # ───────────────────────────────────────────────────────────────
+        print(f"\nSTEP 5: Submit solution (POST /solve/submit)")
+        
+        from backend.routers.solve import submit_solution
+        from backend.schemas import SolveSubmitRequest
+        
+        with patch("backend.routers.solve.crud") as mock_crud, \
+             patch("backend.routers.solve.sio", new_callable=AsyncMock) as mock_sio:
+            mock_crud.get_solve_session_by_id.return_value = {"id": test_session_id}
+            mock_crud.create_solution.return_value = 789
+            
+            request = SolveSubmitRequest(
+                session_id=test_session_id,
+                algorithm_used="CFOP",
+                move_count=2,
+                solution_string="U D"
+            )
+            response = await submit_solution(request, mock_db)
+            
+            assert response.solution_id == 789
+            mock_crud.update_solve_session_status.assert_called_with(mock_db, test_session_id, "solved")
+            print(f"  ✓ Solution submitted: solution_id=789")
+            print(f"    Status transition: solving → solved")
         
         # ───────────────────────────────────────────────────────────────
         # SUMMARY
@@ -176,8 +199,8 @@ class TestScannerSolverIntegration:
         print(f"  1. Session created (session_id={test_session_id})")
         print(f"  2. Scan submitted (cube_state_id=456)")
         print(f"  3. Cube state verified in DB")
-        print(f"  4. State valid for solver")
-        print(f"  5. Solution storage flow verified")
+        print(f"  4. Solve request acknowledged")
+        print(f"  5. Solution submission flow verified")
 
     def test_scanner_bridge_provisioning(self):
         """Test scanner_bridge session ID provisioning."""

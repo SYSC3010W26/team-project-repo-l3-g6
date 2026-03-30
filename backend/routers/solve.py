@@ -8,10 +8,8 @@ and GET /solve/{session_id}.
 All DB access via database.crud functions through Depends(get_db_dep).
 ============================================================
 """
-import sys
-import os
-from fastapi import APIRouter, Depends, HTTPException
 import sqlite3
+from fastapi import APIRouter, Depends, HTTPException
 from database import crud
 from database.models import SolutionCreate, SolutionStepCreate
 from backend.deps import get_db_dep
@@ -19,14 +17,6 @@ from backend import schemas
 from backend.sio_instance import sio
 
 router = APIRouter()
-
-# Import solver (add solver directory to path)
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'solver'))
-try:
-    from Solver import Solver, CubeNotSolvableError
-    SOLVER_AVAILABLE = True
-except ImportError:
-    SOLVER_AVAILABLE = False
 
 
 def parse_moves(solution_string: str) -> list[dict]:
@@ -61,21 +51,19 @@ def parse_moves(solution_string: str) -> list[dict]:
     return steps
 
 
-@router.post("/start", response_model=schemas.SolveSubmitResponse)
+@router.post("/start", response_model=schemas.SolveStartResponse)
 async def start_solve(body: schemas.SolveStartRequest, conn: sqlite3.Connection = Depends(get_db_dep)):
     """
-    Trigger the CFOP solver to compute a solution for a scanned cube state.
+    Acknowledge the solve request and transition session to 'solving' state.
     
     Prerequisites:
     - Session must exist
     - Valid cube state must have been scanned (in cube_states table)
     
     Returns:
-    - solution_id: ID of the newly created solution
+    - session_id: ID of the session
+    - status: current state of the session (solving)
     """
-    if not SOLVER_AVAILABLE:
-        raise HTTPException(status_code=503, detail="Solver not available on this system")
-    
     # Fetch the session
     session = crud.get_solve_session_by_id(conn, body.session_id)
     if not session:
@@ -87,63 +75,20 @@ async def start_solve(body: schemas.SolveStartRequest, conn: sqlite3.Connection 
     if not valid_states:
         raise HTTPException(status_code=400, detail="No valid cube state scanned yet")
     
-    latest_state = valid_states[-1]["state_string"]
+    # Transition to 'solving' state
+    # This acts as a signal for the external solver daemon
+    crud.update_solve_session_status(conn, body.session_id, "solving")
     
-    # Call the solver
-    try:
-        solver = Solver()
-        solver.load_state(latest_state)
-        
-        if solver.is_solved():
-            solution_string = ""  # Already solved
-            move_count = 0
-        else:
-            solution_string = solver.solve()
-            move_count = len(solution_string.split()) if solution_string else 0
-        
-        # Create solution record
-        data = SolutionCreate(
-            session_id=body.session_id,
-            algorithm_used="CFOP",
-            move_count=move_count,
-            solution_string=solution_string,
-        )
-        solution_id = crud.create_solution(conn, data)
-        
-        # Parse and store individual steps
-        if solution_string:
-            steps_data = parse_moves(solution_string)
-            for step in steps_data:
-                crud.create_solution_step(
-                    conn,
-                    SolutionStepCreate(
-                        solution_id=solution_id,
-                        **step
-                    )
-                )
-        
-        # Update session status
-        crud.update_solve_session_status(conn, body.session_id, "solved")
-        
-        # Emit progress via socket.io
-        await sio.emit("solve_complete", {
-            "session_id": body.session_id,
-            "solution_id": solution_id,
-            "move_count": move_count,
-            "solution_string": solution_string
-        })
-        
-        return schemas.SolveSubmitResponse(solution_id=solution_id)
+    # Emit start event via socket.io
+    await sio.emit("solve_started", {
+        "session_id": body.session_id,
+        "status": "solving"
+    })
     
-    except CubeNotSolvableError as e:
-        crud.update_solve_session_status(conn, body.session_id, "error")
-        raise HTTPException(status_code=400, detail=f"Cube state not solvable: {e}")
-    except ValueError as e:
-        crud.update_solve_session_status(conn, body.session_id, "error")
-        raise HTTPException(status_code=400, detail=f"Invalid cube state: {e}")
-    except Exception as e:
-        crud.update_solve_session_status(conn, body.session_id, "error")
-        raise HTTPException(status_code=500, detail=f"Solver error: {e}")
+    return schemas.SolveStartResponse(
+        session_id=body.session_id,
+        status="solving"
+    )
 
 
 @router.post("/submit", response_model=schemas.SolveSubmitResponse)
@@ -172,7 +117,7 @@ async def submit_solution(body: schemas.SolveSubmitRequest, conn: sqlite3.Connec
             )
         )
 
-    crud.update_solve_session_status(conn, body.session_id, "solving")
+    crud.update_solve_session_status(conn, body.session_id, "solved")
     
     # Emit via socket.io
     await sio.emit("solve_complete", {

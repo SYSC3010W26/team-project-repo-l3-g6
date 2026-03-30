@@ -73,6 +73,11 @@ class SolveStartRequest(BaseModel):
     session_id: int
 
 
+class SolveStartResponse(BaseModel):
+    session_id: int
+    status: str
+
+
 class SolveSubmitRequest(BaseModel):
     session_id: int
     algorithm_used: str
