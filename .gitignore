@@ -27,6 +27,11 @@ build/
 .vscode/
 .idea/
 
+# Playwright
+test-results/
+playwright-report/
+tests/e2e/artifacts/
+
 # OS
 .DS_Store
 Thumbs.db
