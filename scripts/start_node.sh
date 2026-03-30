@@ -224,6 +224,12 @@ if NODE_TYPE == 'scanner':
         subprocess.Popen([sys.executable, 'scanner_bridge.py'], cwd='Scanner', env=env)
     else:
         print(f'⚠️  Warning: SESSION_ID not found in environment. scanner_bridge.py will not start.', file=sys.stderr)
+elif NODE_TYPE == 'solver':
+    print(f'🚀 Launching solver_listener.py...')
+    env = os.environ.copy()
+    env['API_BASE_URL'] = SERVER
+    # solver_listener.py is in the solver/ directory
+    subprocess.Popen([sys.executable, 'solver_listener.py'], cwd='solver', env=env)
 
 # Start heartbeat in background
 t = threading.Thread(target=heartbeat, daemon=True)
