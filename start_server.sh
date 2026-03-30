@@ -135,8 +135,25 @@ if kill -0 $BACKEND_PID 2>/dev/null; then
     echo -e "   ${GREEN}✓${NC} Backend running on port 8000 (PID: $BACKEND_PID)"
 else
     echo -e "   ${RED}❌ Backend failed to start. Check /tmp/pi3-backend.log${NC}"
+    cat /tmp/pi3-backend.log
     exit 1
 fi
+
+# ── Verify backend is responding ────────────────────────
+echo -e "${BLUE}   Verifying backend is responsive...${NC}"
+for i in {1..5}; do
+    if curl -s http://localhost:8000/ > /dev/null 2>&1; then
+        echo -e "   ${GREEN}✓${NC} Backend is responding"
+        break
+    fi
+    if [ $i -eq 5 ]; then
+        echo -e "   ${RED}❌ Backend not responding after 10 seconds${NC}"
+        echo -e "   ${YELLOW}Last 20 lines of backend log:${NC}"
+        tail -20 /tmp/pi3-backend.log
+        exit 1
+    fi
+    sleep 2
+done
 
 # ── Start Frontend ─────────────────────────────────────────
 echo ""
