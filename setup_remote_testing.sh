@@ -32,8 +32,21 @@ else
 fi
 
 # 3. Bring Tailscale Up
+echo ""
+echo "======================================================="
+echo " ⚠️ CRITICAL STEP: JOINING THE RIGHT NETWORK ⚠️ "
+echo "======================================================="
+echo "If you are a team member, you MUST have accepted an invite"
+echo "link from the project admin BEFORE doing this step."
+echo ""
+echo "When you click the authentication link below, look at the"
+echo "TOP LEFT CORNER of the Tailscale website."
+echo "Make sure the dropdown is set to the TEAM'S network name,"
+echo "NOT your personal email address! Otherwise, your Pis won't"
+echo "be able to see each other."
+echo "======================================================="
+echo ""
 echo "[+] Starting Tailscale..."
-echo "    (If this is your first time, you will be prompted to authenticate via a web link)"
 sudo tailscale up --ssh
 
 # 4. Fetch the new Tailscale IP
@@ -50,8 +63,19 @@ echo "======================================================="
 
 # Show other nodes on the network to make it easy for the user to find the Master IP
 echo "Other devices currently on your Tailscale network:"
-tailscale status | grep -v "$TAILSCALE_IP" || echo "  (No other active devices found yet)"
-echo ""
+PEERS=$(tailscale status | grep -v "$TAILSCALE_IP" || true)
+
+if [ -z "$PEERS" ]; then
+    echo "  ❌ WARNING: No other active devices found!"
+    echo "  If you are a worker node, this means you probably logged into"
+    echo "  your own personal network instead of the team's network."
+    echo "  You should press Ctrl+C, run 'sudo tailscale logout', accept"
+    echo "  the admin's invite link, and run this script again."
+    echo ""
+else
+    echo "$PEERS"
+    echo ""
+fi
 
 read -p "Is this Pi the MAIN/MASTER node? (y/n): " IS_MASTER
 
