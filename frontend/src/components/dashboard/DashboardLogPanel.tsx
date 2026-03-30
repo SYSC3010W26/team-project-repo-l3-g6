@@ -1,6 +1,8 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { NodeStatus, PipelineStatus, SolveSession, CubeState } from '@/types/api';
+import type { NodeStatus, PipelineStatus, SolveSession, CubeState, SystemLog } from '@/types/api';
+import { useQuery } from '@tanstack/react-query';
+import { getLogs } from '@/lib/api';
 
 interface DashboardLogPanelProps {
   loading: boolean;
@@ -14,7 +16,7 @@ function formatSessionTimestamp(value: string | null | undefined): string {
   if (!value) return '--';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '--';
-  return date.toLocaleTimeString();
+  return date.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 export default function DashboardLogPanel({
@@ -24,7 +26,13 @@ export default function DashboardLogPanel({
   nodes,
   scanData,
 }: DashboardLogPanelProps) {
-  if (loading) {
+  const { data: logs, isLoading: logsLoading } = useQuery<SystemLog[]>({
+    queryKey: ['logs'],
+    queryFn: () => getLogs(),
+    refetchInterval: 3000,
+  });
+
+  if (loading || logsLoading) {
     return (
       <div className="space-y-2">
         {[1, 2, 3, 4, 5, 6].map((index) => (
@@ -35,26 +43,10 @@ export default function DashboardLogPanel({
   }
 
   const hasSession = Boolean(latestSession);
-  const totalNodes = nodes.length;
-  const onlineNodes = nodes.filter((node) => node.is_online).length;
+  const sessionId = latestSession?.session_id;
 
-  const idleLines = [
-    '[idle] waiting for next solve request',
-    `[idle] cluster heartbeat ${onlineNodes}/${totalNodes || 4} nodes online`,
-    '[idle] terminal will stream session events once execution starts',
-  ];
-
-  const liveLines = [
-    `[session:${latestSession?.session_id}] status=${status}`,
-    `[session:${latestSession?.session_id}] algorithm=${latestSession?.selected_algorithm ?? 'unknown'}`,
-    `[session:${latestSession?.session_id}] started_at=${formatSessionTimestamp(latestSession?.started_at)}`,
-    `[session:${latestSession?.session_id}] completed_at=${formatSessionTimestamp(latestSession?.completed_at)}`,
-    `[scan] state_string=${scanData?.state_string ? 'present' : 'pending'}`,
-    `[scan] confidence=${scanData?.confidence ?? '--'}`,
-    `[nodes] online=${onlineNodes}/${totalNodes || 4}`,
-  ];
-
-  const lines = hasSession ? liveLines : idleLines;
+  // Filter logs for current session if active, otherwise show last few global logs
+  const displayLogs = logs?.filter(log => !sessionId || log.session_id === sessionId) ?? [];
 
   return (
     <div className="rounded-xl border border-kl-outline-variant bg-kl-surface-lowest/70 p-3">
@@ -67,11 +59,21 @@ export default function DashboardLogPanel({
 
       <ScrollArea className="h-56 rounded border border-kl-outline-variant bg-black/40 p-2">
         <div className="space-y-1 font-mono text-xs text-kl-on-surface">
-          {lines.map((line) => (
-            <p key={line} className="break-words text-kl-on-surface-variant">
-              <span className="text-kl-secondary">$</span> {line}
+          {displayLogs.length > 0 ? (
+            displayLogs.map((log) => (
+              <p key={log.id} className="break-words text-kl-on-surface-variant">
+                <span className="text-kl-secondary">[{formatSessionTimestamp(log.created_at)}]</span>
+                {log.node_id && <span className="text-blue-400"> [{log.node_id}]</span>}
+                <span className={log.severity === 'error' ? 'text-red-400' : log.severity === 'warning' ? 'text-yellow-400' : 'text-kl-on-surface'}>
+                  {' '}{log.message}
+                </span>
+              </p>
+            ))
+          ) : (
+            <p className="text-kl-on-surface-variant italic">
+              <span className="text-kl-secondary">$</span> [idle] waiting for system events...
             </p>
-          ))}
+          )}
         </div>
       </ScrollArea>
     </div>
