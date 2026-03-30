@@ -3,9 +3,10 @@
 # Eric McFetridge SYSC3010:L3G6
 ############################################
 
-import os
 import asyncio
 import logging
+from typing import Any, Dict, Optional
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,6 +14,60 @@ load_dotenv()
 # Configure logging for motor operations
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+# GPIO Hardware Abstraction Layer
+# This allows real GPIO to be used on RPi and mocked in tests
+class GPIO:
+    """Abstraction layer for GPIO operations."""
+    
+    BCM = 11  # GPIO numbering mode (BCM = Broadcom)
+    OUT = 1   # GPIO direction
+    HIGH = 1  # GPIO logic level
+    LOW = 0   # GPIO logic level
+    
+    @staticmethod
+    def setmode(mode):
+        """Set GPIO numbering mode (BCM or BOARD)."""
+        pass
+    
+    @staticmethod
+    def setup(pin, mode):
+        """Configure a GPIO pin as input or output."""
+        pass
+    
+    @staticmethod
+    def output(pin, level):
+        """Set a GPIO pin to HIGH or LOW."""
+        pass
+    
+    @staticmethod
+    def cleanup():
+        """Release GPIO resources."""
+        pass
+
+# Global GPIO implementation (can be mocked for testing)
+_gpio_impl: Optional[Any] = None
+_mock_gpio_state: Dict[int, int] = {}
+
+def set_gpio_impl(impl: Any):
+    """Set the GPIO implementation (for testing with mocks)."""
+    global _gpio_impl
+    _gpio_impl = impl
+
+def get_gpio():
+    """Get the active GPIO implementation."""
+    global _gpio_impl
+    if _gpio_impl is not None:
+        return _gpio_impl
+    
+    # Try to import real RPi.GPIO on hardware
+    try:
+        import RPi.GPIO as real_gpio
+        _gpio_impl = real_gpio
+        return real_gpio
+    except ImportError:
+        # Not on RPi hardware, use stub
+        return GPIO
 
 # Move notation to motor mapping
 # Format: move_notation -> (motor_id, direction, steps)
@@ -118,20 +173,20 @@ async def _send_motor_signal(motor_id, direction, steps):
     """
     Send STEP/DIR pulse signal to a stepper motor via GPIO.
     
-    On actual hardware, this would:
-    1. Enable the motor (set ENABLE pin high)
-    2. Set DIR pin to indicate rotation direction
-    3. Generate STEP pulses at a frequency matching desired speed
-    4. Wait for motion to complete (~0.5-1.0s per move)
-    5. Disable motor (set ENABLE pin low)
+    Implements hardware control via GPIO STEP/DIR signals:
+    1. Enable the motor (set ENABLE pin HIGH)
+    2. Set DIR pin to indicate rotation direction (HIGH=CW, LOW=CCW)
+    3. Generate STEP pulses at 400 Hz (2.5 ms period)
+    4. Wait for motion to complete
+    5. Disable motor (set ENABLE pin LOW) to save power
     
-    In this stub, we simulate the timing but don't actually touch GPIO
-    (which would require RPi.GPIO or gpiozero library + root permissions).
+    For development/testing on non-RPi machines, runs in mock mode using
+    asyncio.sleep to simulate the real timing without GPIO hardware.
     
     Args:
         motor_id: Motor index (0-4)
         direction: +1 for CW, -1 for CCW
-        steps: Number of microsteps to execute
+        steps: Number of microsteps to execute (200=90°, 400=180°)
     
     Returns:
         bool: True if signal sent successfully, False on error
@@ -140,33 +195,14 @@ async def _send_motor_signal(motor_id, direction, steps):
         >>> result = await _send_motor_signal(0, 1, 200)  # Right motor CW
         >>> assert result is True
     
-    Hardware Integration:
-        For Raspberry Pi with RPi.GPIO library:
-        ```python
-        import RPi.GPIO as GPIO
-        GPIO.setmode(GPIO.BCM)
-        step_pin = MOTOR_STEP_PINS[motor_id]
-        dir_pin = MOTOR_DIR_PINS[motor_id]
-        enable_pin = MOTOR_ENABLE_PINS[motor_id]
-        
-        GPIO.setup(step_pin, GPIO.OUT)
-        GPIO.setup(dir_pin, GPIO.OUT)
-        GPIO.setup(enable_pin, GPIO.OUT)
-        
-        GPIO.output(enable_pin, GPIO.HIGH)  # Enable motor
-        GPIO.output(dir_pin, GPIO.HIGH if direction > 0 else GPIO.LOW)
-        
-        # Generate step pulses (frequency ~400 Hz for ~1 sec per 200-step move)
-        step_freq = 400  # Hz
-        for _ in range(steps):
-            GPIO.output(step_pin, GPIO.HIGH)
-            await asyncio.sleep(1 / (2 * step_freq))
-            GPIO.output(step_pin, GPIO.LOW)
-            await asyncio.sleep(1 / (2 * step_freq))
-        
-        GPIO.output(enable_pin, GPIO.LOW)  # Disable motor
-        GPIO.cleanup()
-        ```
+    GPIO Signals:
+        STEP pin:   Pulsed at 400 Hz (high 1.25ms, low 1.25ms)
+        DIR pin:    Set at start of move (HIGH for CW, LOW for CCW)
+        ENABLE pin: HIGH during move (LOW to disable/sleep motor)
+    
+    Hardware Integration (RPi with RPi.GPIO):
+        When RPi.GPIO is available, real GPIO signals are sent to STEP, DIR,
+        and ENABLE pins. On dev machines without GPIO, timing is simulated.
     """
     try:
         # Validate inputs
@@ -185,22 +221,86 @@ async def _send_motor_signal(motor_id, direction, steps):
         motor_name = MOTOR_NAMES[motor_id]
         direction_str = "CW" if direction > 0 else "CCW"
         
-        # Simulate motor movement time (~1 second per 200-step move)
-        move_duration = (steps / 200.0) * 1.0
+        # Get GPIO implementation (real or mock)
+        gpio = get_gpio()
+        
+        # Get pin assignments
+        step_pin = MOTOR_STEP_PINS[motor_id]
+        dir_pin = MOTOR_DIR_PINS[motor_id]
+        enable_pin = MOTOR_ENABLE_PINS[motor_id]
+        
+        # Setup GPIO pins (no-op if using mock or already set up)
+        try:
+            gpio.setmode(gpio.BCM)
+            gpio.setup(step_pin, gpio.OUT)
+            gpio.setup(dir_pin, gpio.OUT)
+            gpio.setup(enable_pin, gpio.OUT)
+        except (AttributeError, RuntimeError):
+            # GPIO setup failed (likely not RPi hardware) - continue with mock
+            pass
+        
+        # Enable motor (HIGH = enabled, ready to receive signals)
+        try:
+            gpio.output(enable_pin, gpio.HIGH)
+        except (AttributeError, RuntimeError):
+            pass
+        
+        # Set direction (HIGH = CW, LOW = CCW)
+        dir_level = gpio.HIGH if direction > 0 else gpio.LOW
+        try:
+            gpio.output(dir_pin, dir_level)
+        except (AttributeError, RuntimeError):
+            pass
+        
+        # Generate STEP pulses at 400 Hz
+        # 400 Hz = 2.5 ms period = 1.25 ms per half-cycle
+        pulse_period = 1.0 / 400.0  # 0.0025 seconds
+        half_period = pulse_period / 2.0  # 0.00125 seconds (1.25 ms)
         
         logger.debug(
-            f"GPIO signal: motor_id={motor_id} ({motor_name}) "
-            f"dir_pin={MOTOR_DIR_PINS[motor_id]} "
-            f"dir={'HIGH' if direction > 0 else 'LOW'} "
-            f"step_pin={MOTOR_STEP_PINS[motor_id]} "
-            f"step_count={steps} "
-            f"duration~{move_duration:.1f}s"
+            f"GPIO signal start: motor_id={motor_id} ({motor_name}) "
+            f"dir_pin={dir_pin} dir={'HIGH' if direction > 0 else 'LOW'} "
+            f"step_pin={step_pin} step_count={steps} "
+            f"frequency=400Hz period={pulse_period*1000:.2f}ms"
         )
         
-        # Wait for motor to complete (simulated in stub, actual GPIO in hardware)
-        await asyncio.sleep(move_duration)
+        # Generate step pulses
+        for step_num in range(steps):
+            # STEP HIGH
+            try:
+                gpio.output(step_pin, gpio.HIGH)
+            except (AttributeError, RuntimeError):
+                pass
+            
+            await asyncio.sleep(half_period)
+            
+            # STEP LOW
+            try:
+                gpio.output(step_pin, gpio.LOW)
+            except (AttributeError, RuntimeError):
+                pass
+            
+            await asyncio.sleep(half_period)
         
-        logger.debug(f"Motor {motor_id} ({motor_name}) completed {direction_str} rotation")
+        # Disable motor (LOW = disabled/sleeping, saves power)
+        try:
+            gpio.output(enable_pin, gpio.LOW)
+        except (AttributeError, RuntimeError):
+            pass
+        
+        # Clean up GPIO (safe to call even if not on RPi)
+        try:
+            gpio.cleanup()
+        except (AttributeError, RuntimeError):
+            pass
+        
+        # Calculate actual duration for logging
+        move_duration = steps * pulse_period
+        logger.info(
+            f"Motor {motor_id} ({motor_name}) completed {direction_str} "
+            f"rotation: {steps} steps @ 400Hz = {move_duration:.2f}s"
+        )
+        
         return True
     
     except Exception as e:

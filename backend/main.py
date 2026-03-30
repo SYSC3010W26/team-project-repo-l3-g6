@@ -23,6 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.sio_instance import sio
 from backend.routers import jobs, scan, solve, execute, nodes, logs
 from backend.heartbeat import heartbeat_monitor
+from backend.motor_timeout import motor_execution_timeout_monitor
 
 # ---------------------------------------------------------------------------
 # FastAPI app
@@ -45,6 +46,7 @@ fastapi_app.add_middleware(
 async def startup_event():
     """Start background tasks on server boot (D-08)."""
     asyncio.create_task(heartbeat_monitor())
+    asyncio.create_task(motor_execution_timeout_monitor())
 
 # ---------------------------------------------------------------------------
 # ASGI composition — sio wraps fastapi_app so both share port 8000
