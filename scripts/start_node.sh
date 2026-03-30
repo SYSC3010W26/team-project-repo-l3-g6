@@ -99,13 +99,21 @@ fi
 # ── Get Session ID (Scanner Pi only) ────────────────────────
 if [ "$NODE_TYPE" = "scanner" ] && [ -z "$SESSION_ID" ]; then
     echo ""
-    echo -e "${YELLOW}🔑 Scanner needs a Session ID to post scans.${NC}"
-    echo -e "   Find this on the central server's dashboard."
-    echo ""
-    read -p "   Session ID: " SESSION_ID
+    echo -e "${YELLOW}🔑 Scanner auto-creating a new solve session...${NC}"
+    SESSION_RESPONSE=$(curl -sf -X POST "${SERVER_URL}/jobs/start" \
+        -H 'Content-Type: application/json' \
+        -d '{"algorithm":"CFOP"}' 2>/dev/null)
 
-    if [ -z "$SESSION_ID" ]; then
-        echo -e "${RED}❌ No Session ID provided. Exiting.${NC}"
+    if [ $? -eq 0 ] && [ -n "$SESSION_RESPONSE" ]; then
+        SESSION_ID=$(echo "$SESSION_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['session_id'])" 2>/dev/null)
+        if [ -n "$SESSION_ID" ]; then
+            echo -e "   ${GREEN}✓${NC} Created session ${GREEN}#${SESSION_ID}${NC}"
+        else
+            echo -e "${RED}❌ Failed to parse session ID from server response.${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${RED}❌ Failed to create session. Is the server running at ${SERVER_URL}?${NC}"
         exit 1
     fi
 fi
