@@ -6,11 +6,16 @@ Selects and initializes a solving algorithm by name. Currently supports CFOP.
 
 from CFOP.CFOP_Algorithm import CFOP_Algorithm
 
+# Adding algorithms is as easy as importing the algorithm class here
+# annd adding it to the ALGORITHMS dictionary below. The key is the name of the algorithm, and the value is the class that implements it.
+from Kociemba.Kociemba_Algorithm import Kociemba_Algorithm
+
 
 class AlgorithmSelector:
 
     ALGORITHMS = {
-        "CFOP": CFOP_Algorithm,
+        "CFOP":     CFOP_Algorithm,
+        "KOCIEMBA": Kociemba_Algorithm,
     }
 
     def __init__(self, cube_state, algorithm_name):

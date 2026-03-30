@@ -41,23 +41,7 @@ from Cube_State import Cube
 
 
 VALID_FACES = set("URFDLB")
-SCRAMBLE_MOVES = [
-    "R",
-    "R'",
-    "R2",
-    "U",
-    "U'",
-    "U2",
-    "F",
-    "F'",
-    "F2",
-    "L",
-    "L'",
-    "L2",
-    "B",
-    "B'",
-    "B2",
-]
+SCRAMBLE_MOVES = ["R","R'","R2","U","U'","U2","F","F'","F2","L","L'","L2","B","B'","B2",]
 
 
 class CubeNotSolvableError(Exception):
@@ -102,7 +86,7 @@ class Solver:
         self._algorithm = None
 
     def select_algorithm(self, name):
-        """Select the solving algorithm by name. Currently only 'CFOP' is supported.
+        """Select the solving algorithm by name.
 
         Raises ValueError for unknown names.
         """
@@ -118,7 +102,7 @@ class Solver:
         """Run the selected algorithm and return the solution as a move string.
 
         Returns an empty string if already solved. Raises CubeNotSolvableError
-        if the cube state is physically impossible (PLL pattern not found).
+        if the cube state is physically impossible (solution not found).
         """
         if self._cube.is_solved():
             return ""
@@ -128,7 +112,8 @@ class Solver:
         moves = self._algorithm.solve()
 
         result = Cube()
-        result.set_cube_state(self._algorithm._working[:])
+        result.set_cube_state(self._cube.state[:])
+        result.apply_sequence(moves)
         if not result.is_solved():
             raise CubeNotSolvableError(
                 "Could not fully solve the cube — scanned state may be physically impossible. "

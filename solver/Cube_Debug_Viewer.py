@@ -9,6 +9,7 @@ notation and the following commands:
     history        - print move history
     solve          - run full CFOP solver
     solve cross/f2l/oll/pll - run a single stage
+    solve kociemba - run the two-phase Kociemba solver
     q / quit       - exit
 """
 
@@ -16,6 +17,7 @@ import random
 
 from Cube_State import Cube
 from Algorithm_Selector import AlgorithmSelector
+import Permutation_Table as PT
 
 COLORS = {
     "U": "\033[97m",  # white
@@ -36,6 +38,8 @@ class CubeDebugger:
     def __init__(self):
         self.cube = Cube()
         self.history = []
+        # Cached after first build so the ~12 s table construction only runs once.
+        self._kociemba_alg = None
 
     def color(self, sticker):
         return COLORS.get(sticker, "") + sticker + RESET
@@ -79,6 +83,48 @@ class CubeDebugger:
         """Initializes the CFOP algorithm with the current cube state."""
         selector = AlgorithmSelector(self.cube.state[:], "CFOP")
         return selector.get_algorithm()
+
+    def _build_kociemba(self):
+        """Returns a Kociemba instance for the current cube state.
+
+        Tables are built on the first call (~12 s) and reused for every
+        subsequent solve within the same session.
+        """
+        if self._kociemba_alg is None:
+            print("  Building Kociemba tables (one-time, ~12 s)...")
+            selector = AlgorithmSelector(self.cube.state[:], "KOCIEMBA")
+            self._kociemba_alg = selector.get_algorithm()
+        else:
+            self._kociemba_alg.cube_state = self.cube.state[:]
+            self._kociemba_alg.moves      = []
+        return self._kociemba_alg
+
+    def kociemba_solve(self):
+        """Runs the two-phase Kociemba solver and updates the cube state."""
+        if self.cube.is_solved():
+            print("  The cube is already solved.")
+            return
+
+        alg   = self._build_kociemba()
+        state = self.cube.state[:]
+
+        p1_moves = alg.solve_phase1(state)
+        for m in p1_moves:
+            state = PT.apply_move(state, PT.MOVES[m])
+        self.cube.set_cube_state(state[:])
+        self.history.extend(p1_moves)
+        print(f"\n  Phase 1 ({len(p1_moves)} moves): {' '.join(p1_moves) or '(none)'}")
+        self.display()
+
+        p2_moves = alg.solve_phase2(state)
+        for m in p2_moves:
+            state = PT.apply_move(state, PT.MOVES[m])
+        self.cube.set_cube_state(state[:])
+        self.history.extend(p2_moves)
+        print(f"\n  Phase 2 ({len(p2_moves)} moves): {' '.join(p2_moves) or '(none)'}")
+        self.display()
+
+        print(f"\nSolution complete!  Total moves: {len(p1_moves) + len(p2_moves)}")
 
     def solve_stage(self, stage_name):
         """Runs a single stage of the CFOP algorithm and updates the cube state. used for debugging specific stages."""
@@ -161,6 +207,7 @@ class CubeDebugger:
         print("  solve f2l     - run F2L stage only (Only works if Cross is solved)")
         print("  solve oll     - run OLL stage only (Only works if F2L is solved)")
         print("  solve pll     - run PLL stage only (Only works if OLL is solved)")
+        print("  solve kociemba - run two-phase Kociemba solver")
         print("  q / quit      - exit")
         print()
 
@@ -217,10 +264,13 @@ class CubeDebugger:
                 if len(parts) == 1:
                     self.full_solve()
                 elif len(parts) == 2:
-                    self.solve_stage(parts[1])
+                    if parts[1] == "kociemba":
+                        self.kociemba_solve()
+                    else:
+                        self.solve_stage(parts[1])
                 else:
                     print(
-                        "  Use: solve  |  solve cross  |  solve f2l  |  solve oll  |  solve pll"
+                        "  Use: solve  |  solve cross  |  solve f2l  |  solve oll  |  solve pll  |  solve kociemba"
                     )
                 self.display()
                 continue
