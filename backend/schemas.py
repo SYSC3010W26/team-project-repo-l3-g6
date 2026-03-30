@@ -143,7 +143,7 @@ class NodeStatusResponse(BaseModel):
     node_id: str
     node_type: str
     ip_address: Optional[str] = None
-    status: str
+    is_online: bool
     last_heartbeat: str
     last_message: Optional[str] = None
 

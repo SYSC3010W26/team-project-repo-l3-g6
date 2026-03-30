@@ -96,7 +96,7 @@ export default function Dashboard() {
   }
 
   const nodeList = ['scanner', 'solver', 'motor', 'database'];
-  const nodeMap = Object.fromEntries((nodes ?? []).map((n) => [n.node_id, n]));
+  const nodeMap = Object.fromEntries((nodes ?? []).map((n) => [n.node_type, n]));
 
   const progressPercent =
     status === 'idle' ? 0 : status === 'scanning' ? 25 : status === 'solving' ? 55 : status === 'executing' ? 80 : 100;

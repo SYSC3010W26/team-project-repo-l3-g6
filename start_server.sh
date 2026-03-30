@@ -9,7 +9,7 @@
 #
 # This starts:
 #   1. FastAPI backend on port 8000
-#   2. Frontend dev server on port 5173 (accessible from any device on LAN)
+#   2. Frontend preview server on port 5173 (accessible from any device on LAN)
 #
 # Prerequisites:
 #   - Python 3.11+ with venv
@@ -39,8 +39,15 @@ echo -e "${NC}"
 
 # ── Get this Pi's IP ────────────────────────────────────────
 MY_IP=$(hostname -I | awk '{print $1}')
+TAILSCALE_IP=$(tailscale status 2>/dev/null | head -1 | awk '{print $1}' || echo "")
+
 echo -e "${BLUE}📡 Your Pi's IP address: ${GREEN}${MY_IP}${NC}"
-echo -e "${BLUE}   Tell your teammates to set: ${YELLOW}PI_SERVER_IP=${MY_IP}${NC}"
+if [ -n "$TAILSCALE_IP" ]; then
+    echo -e "${BLUE}📡 Tailscale IP address: ${GREEN}${TAILSCALE_IP}${NC} ${YELLOW}(Use this for remote teammates)${NC}"
+    echo -e "${BLUE}   Tell your teammates to set: ${YELLOW}PI_SERVER_IP=${TAILSCALE_IP}${NC}"
+else
+    echo -e "${BLUE}   Tell your teammates to set: ${YELLOW}PI_SERVER_IP=${MY_IP}${NC}"
+fi
 echo ""
 
 # ── Check prerequisites ────────────────────────────────────
@@ -63,6 +70,15 @@ if ! command -v npm &> /dev/null; then
     exit 1
 fi
 echo -e "   ${GREEN}✓${NC} npm $(npm --version 2>/dev/null)"
+
+# ── Pull latest code ───────────────────────────────────────
+echo ""
+echo -e "${BLUE}🔄 Pulling latest code from git...${NC}"
+if git pull 2>&1 | tee /tmp/pi3-gitpull.log | grep -q "Already up to date"; then
+    echo -e "   ${GREEN}✓${NC} Already up to date"
+else
+    echo -e "   ${GREEN}✓${NC} Updated — see /tmp/pi3-gitpull.log for details"
+fi
 
 # ── Setup Python venv ──────────────────────────────────────
 echo ""
@@ -128,15 +144,42 @@ if kill -0 $BACKEND_PID 2>/dev/null; then
     echo -e "   ${GREEN}✓${NC} Backend running on port 8000 (PID: $BACKEND_PID)"
 else
     echo -e "   ${RED}❌ Backend failed to start. Check /tmp/pi3-backend.log${NC}"
+    cat /tmp/pi3-backend.log
     exit 1
 fi
 
+# ── Verify backend is responding ────────────────────────
+echo -e "${BLUE}   Verifying backend is responsive...${NC}"
+for i in {1..5}; do
+    if curl -s http://localhost:8000/ > /dev/null 2>&1; then
+        echo -e "   ${GREEN}✓${NC} Backend is responding"
+        break
+    fi
+    if [ $i -eq 5 ]; then
+        echo -e "   ${RED}❌ Backend not responding after 10 seconds${NC}"
+        echo -e "   ${YELLOW}Last 20 lines of backend log:${NC}"
+        tail -20 /tmp/pi3-backend.log
+        exit 1
+    fi
+    sleep 2
+done
+
 # ── Start Frontend ─────────────────────────────────────────
 echo ""
-echo -e "${BLUE}🌐 Starting frontend server...${NC}"
+echo -e "${BLUE}⚛️  Building frontend for production...${NC}"
 
 cd frontend
-npm run dev -- --host 0.0.0.0 > /tmp/pi3-frontend.log 2>&1 &
+npm run build > /tmp/pi3-frontend-build.log 2>&1
+if [ $? -ne 0 ]; then
+    echo -e "   ${RED}❌ Frontend build failed. Check /tmp/pi3-frontend-build.log${NC}"
+    cat /tmp/pi3-frontend-build.log
+    kill $BACKEND_PID 2>/dev/null
+    exit 1
+fi
+echo -e "   ${GREEN}✓${NC} Frontend built successfully"
+
+echo -e "${BLUE}🌐 Starting frontend server...${NC}"
+npm run preview > /tmp/pi3-frontend.log 2>&1 &
 FRONTEND_PID=$!
 cd ..
 sleep 3
@@ -160,11 +203,20 @@ echo -e "  ${BLUE}API:${NC}            http://${MY_IP}:8000"
 echo -e "  ${BLUE}API Health:${NC}     http://${MY_IP}:8000/"
 echo ""
 echo -e "  ${YELLOW}📋 For your teammates:${NC}"
-echo -e "     Set ${GREEN}PI_SERVER_IP=${MY_IP}${NC} in their .env"
+if [ -n "$TAILSCALE_IP" ]; then
+    echo -e "     Set ${GREEN}PI_SERVER_IP=${TAILSCALE_IP}${NC} in their .env (Tailscale)"
+else
+    echo -e "     Set ${GREEN}PI_SERVER_IP=${MY_IP}${NC} in their .env (Local Network)"
+fi
 echo -e "     Then run ${GREEN}./start_node.sh${NC} on their Pi"
 echo ""
 echo -e "  ${YELLOW}📱 Open dashboard on any device:${NC}"
-echo -e "     http://${MY_IP}:5173"
+if [ -n "$TAILSCALE_IP" ]; then
+    echo -e "     http://${TAILSCALE_IP}:5173 (Tailscale)"
+    echo -e "     http://${MY_IP}:5173 (Local Network)"
+else
+    echo -e "     http://${MY_IP}:5173"
+fi
 echo ""
 echo -e "  ${YELLOW}📄 Logs:${NC}"
 echo -e "     Backend:  tail -f /tmp/pi3-backend.log"
@@ -173,12 +225,26 @@ echo ""
 echo -e "  Press ${RED}Ctrl+C${NC} to stop everything"
 echo ""
 
+# ── Start Database Heartbeat ───────────────────────────────
+echo ""
+echo -e "${BLUE}💓 Starting Database Pi heartbeat loop...${NC}"
+(
+  while true; do
+    curl -s -X POST "http://127.0.0.1:8000/nodes/heartbeat" \
+         -H "Content-Type: application/json" \
+         -d '{"node_id": "rpi4-db", "node_type": "database", "status": "online"}' > /dev/null
+    sleep 3
+  done
+) &
+DB_HEARTBEAT_PID=$!
+
 # ── Trap Ctrl+C to clean up ────────────────────────────────
 cleanup() {
     echo ""
     echo -e "${YELLOW}🛑 Shutting down...${NC}"
     kill $BACKEND_PID 2>/dev/null
     kill $FRONTEND_PID 2>/dev/null
+    kill $DB_HEARTBEAT_PID 2>/dev/null
     echo -e "${GREEN}   Done. Goodbye!${NC}"
     exit 0
 }
