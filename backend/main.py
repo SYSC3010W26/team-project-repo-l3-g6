@@ -76,12 +76,12 @@ def health_check():
 # Router registration
 # ---------------------------------------------------------------------------
 
-fastapi_app.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
-fastapi_app.include_router(scan.router, prefix="/scan", tags=["scan"])
-fastapi_app.include_router(solve.router, prefix="/solve", tags=["solve"])
-fastapi_app.include_router(execute.router, prefix="/execute", tags=["execute"])
-fastapi_app.include_router(nodes.router, prefix="/nodes", tags=["nodes"])
-fastapi_app.include_router(logs.router, prefix="/logs", tags=["logs"])
+fastapi_app.include_router(jobs.router, prefix="/api/jobs", tags=["jobs"])
+fastapi_app.include_router(scan.router, prefix="/api/scan", tags=["scan"])
+fastapi_app.include_router(solve.router, prefix="/api/solve", tags=["solve"])
+fastapi_app.include_router(execute.router, prefix="/api/execute", tags=["execute"])
+fastapi_app.include_router(nodes.router, prefix="/api/nodes", tags=["nodes"])
+fastapi_app.include_router(logs.router, prefix="/api/logs", tags=["logs"])
 
 # Register Socket.IO event handlers (must import after sio is created)
 import backend.socket_handlers  # noqa: F401, E402
