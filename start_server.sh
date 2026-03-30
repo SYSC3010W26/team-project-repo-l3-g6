@@ -9,7 +9,7 @@
 #
 # This starts:
 #   1. FastAPI backend on port 8000
-#   2. Frontend dev server on port 5173 (accessible from any device on LAN)
+#   2. Frontend preview server on port 5173 (accessible from any device on LAN)
 #
 # Prerequisites:
 #   - Python 3.11+ with venv
@@ -70,6 +70,15 @@ if ! command -v npm &> /dev/null; then
     exit 1
 fi
 echo -e "   ${GREEN}✓${NC} npm $(npm --version 2>/dev/null)"
+
+# ── Pull latest code ───────────────────────────────────────
+echo ""
+echo -e "${BLUE}🔄 Pulling latest code from git...${NC}"
+if git pull 2>&1 | tee /tmp/pi3-gitpull.log | grep -q "Already up to date"; then
+    echo -e "   ${GREEN}✓${NC} Already up to date"
+else
+    echo -e "   ${GREEN}✓${NC} Updated — see /tmp/pi3-gitpull.log for details"
+fi
 
 # ── Setup Python venv ──────────────────────────────────────
 echo ""
@@ -170,7 +179,7 @@ fi
 echo -e "   ${GREEN}✓${NC} Frontend built successfully"
 
 echo -e "${BLUE}🌐 Starting frontend server...${NC}"
-npm run preview -- --host 0.0.0.0 > /tmp/pi3-frontend.log 2>&1 &
+npm run preview > /tmp/pi3-frontend.log 2>&1 &
 FRONTEND_PID=$!
 cd ..
 sleep 3
