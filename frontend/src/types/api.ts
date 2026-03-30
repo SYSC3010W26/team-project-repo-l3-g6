@@ -8,6 +8,7 @@ export interface JobState {
 
 export interface NodeStatus {
   node_id: string;
+  node_type: string;
   is_online: boolean;
   last_heartbeat: string | null;
 }
