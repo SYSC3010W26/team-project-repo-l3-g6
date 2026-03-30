@@ -126,3 +126,49 @@ def test_api_contract_verification(page: Page):
     
     # Navigation should happen to Dashboard (/) after success (as per Sidebar.tsx logic)
     expect(page).to_have_url(BASE_URL + "/")
+
+def test_full_lifecycle(page: Page):
+    """
+    Simulates a full session lifecycle:
+    1. Click 'NEW SOLVE' to start.
+    2. Mock the state transitioning from 'pending' -> 'running' -> 'completed'.
+    3. Verify the UI reflects the 'completed' state.
+    """
+    session_id = 999
+    # Cycle through states: pending, running, running, completed
+    state_sequence = ["pending", "running", "running", "completed"]
+    # We use a state_index that persists across multiple route calls
+    # but reset it on each test run if needed.
+    
+    context = {"idx": 0}
+
+    # 1. Mock Start
+    page.route(re.compile(r".*/api/jobs/start"), lambda route: route.fulfill(
+        status=201, json={"session_id": session_id}
+    ))
+
+    # 2. Mock Polling State
+    def handle_get_job(route):
+        status = state_sequence[min(context["idx"], len(state_sequence) - 1)]
+        context["idx"] += 1
+        route.fulfill(status=200, json={
+            "session_id": session_id,
+            "status": status,
+            "started_at": "2026-03-30T18:30:00Z",
+            "selected_algorithm": "Kociemba"
+        })
+
+    page.route(re.compile(fr".*/api/jobs/{session_id}$"), handle_get_job)
+
+    # 3. Execution
+    page.goto(BASE_URL)
+    
+    # Click NEW SOLVE
+    page.get_by_role("button", name="NEW SOLVE").click()
+    
+    # We expect the UI to show the 'completed' state eventually.
+    # Frontend likely polls every few seconds.
+    # Increase timeout to 60s as per requirement.
+    expect(page.get_by_text("completed", exact=True).first).to_be_visible(timeout=60000)
+    
+    page.screenshot(path=f"{ARTIFACTS_DIR}/e2e_06_lifecycle_complete.png")
