@@ -109,6 +109,7 @@ if [ "$NODE_TYPE" = "scanner" ] && [ -z "$SESSION_ID" ]; then
         exit 1
     fi
 fi
+export SESSION_ID
 
 NODE_ID="${NODE_ID:-${NODE_TYPE}-node}"
 echo -e "${BLUE}🏷️  Node: ${GREEN}${NODE_ID}${NC} (${NODE_TYPE})"
@@ -189,7 +190,7 @@ echo ""
 
 # Run the heartbeat client alongside the subsystem
 python3 -c "
-import os, sys, time, threading, requests
+import os, sys, time, threading, requests, subprocess
 
 SERVER = '${SERVER_URL}'
 NODE_ID = '${NODE_ID}'
@@ -213,6 +214,16 @@ def heartbeat():
         except Exception as e:
             print(f'[Heartbeat] Error: {e}', file=sys.stderr)
         time.sleep(INTERVAL)
+
+if NODE_TYPE == 'scanner':
+    SESSION_ID = os.environ.get('SESSION_ID')
+    if SESSION_ID:
+        print(f'🚀 Launching scanner_bridge.py (Session: {SESSION_ID})...')
+        env = os.environ.copy()
+        env['API_BASE_URL'] = SERVER
+        subprocess.Popen([sys.executable, 'scanner_bridge.py'], cwd='Scanner', env=env)
+    else:
+        print(f'⚠️  Warning: SESSION_ID not found in environment. scanner_bridge.py will not start.', file=sys.stderr)
 
 # Start heartbeat in background
 t = threading.Thread(target=heartbeat, daemon=True)
