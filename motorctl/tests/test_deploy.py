@@ -64,7 +64,7 @@ async def test_full_solve_flow():
     await controller.transition(MotorState.WAITING_FOR_LIST)
     
     # 2. Load moves (Variety check)
-    move_sequence = "U R L F2 B' D"
+    move_sequence = "U R L F2 B' D U R L F2 B' D R L B D U F2 B' D B' R L U F2"
     await controller.handle_load_moves(move_sequence)
     assert controller.state == MotorState.WAITING_FOR_START
     assert controller.move_buffer == move_sequence
