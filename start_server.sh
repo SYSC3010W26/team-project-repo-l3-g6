@@ -39,7 +39,7 @@ echo -e "${NC}"
 
 # ── Get this Pi's IP ────────────────────────────────────────
 MY_IP=$(hostname -I | awk '{print $1}')
-TAILSCALE_IP=$(tailscale status 2>/dev/null | grep "^\s" | awk 'NR==1 {print $1}' || echo "")
+TAILSCALE_IP=$(tailscale status 2>/dev/null | head -1 | awk '{print $1}' || echo "")
 
 echo -e "${BLUE}📡 Your Pi's IP address: ${GREEN}${MY_IP}${NC}"
 if [ -n "$TAILSCALE_IP" ]; then
