@@ -1,6 +1,6 @@
 ########################################
 # MOTOR CONTROL SUBSYSTEM - Healthcheck
-# Eric McFetridge SYSC3010:L3G6
+# Eric McFetridge # 101310942
 ########################################
 
 import os
