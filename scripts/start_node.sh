@@ -151,21 +151,21 @@ echo ""
 echo -e "${BLUE}🔍 Checking server connection...${NC}"
 
 if command -v curl &> /dev/null; then
-    if curl -s --connect-timeout 5 "${SERVER_URL}/" > /dev/null 2>&1; then
-        echo -e "   ${GREEN}✓${NC} Server reachable at ${SERVER_URL}"
-    else
+    while ! curl -s --connect-timeout 5 "${SERVER_URL}/" > /dev/null 2>&1; do
         echo -e "   ${RED}❌ Cannot reach server at ${SERVER_URL}${NC}"
         echo -e "   ${YELLOW}   Make sure Saim's Pi is running: ./start_server.sh${NC}"
-        echo -e "   ${YELLOW}   And that both Pis are on the same Wi-Fi network${NC}"
-        exit 1
-    fi
+        echo -e "   ${YELLOW}   Waiting for server... retrying in 3s${NC}"
+        sleep 3
+    done
+    echo -e "   ${GREEN}✓${NC} Server reachable at ${SERVER_URL}"
 elif command -v wget &> /dev/null; then
-    if wget -q --timeout=5 --spider "${SERVER_URL}/" 2>/dev/null; then
-        echo -e "   ${GREEN}✓${NC} Server reachable at ${SERVER_URL}"
-    else
+    while ! wget -q --timeout=5 --spider "${SERVER_URL}/" 2>/dev/null; do
         echo -e "   ${RED}❌ Cannot reach server at ${SERVER_URL}${NC}"
-        exit 1
-    fi
+        echo -e "   ${YELLOW}   Make sure Saim's Pi is running: ./start_server.sh${NC}"
+        echo -e "   ${YELLOW}   Waiting for server... retrying in 3s${NC}"
+        sleep 3
+    done
+    echo -e "   ${GREEN}✓${NC} Server reachable at ${SERVER_URL}"
 else
     echo -e "   ${YELLOW}⚠${NC}  No curl/wget — skipping connectivity check"
 fi
