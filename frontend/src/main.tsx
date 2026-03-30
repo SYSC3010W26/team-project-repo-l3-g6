@@ -11,11 +11,13 @@ const queryClient = new QueryClient({
   },
 });
 
+const devtools = new URLSearchParams(window.location.search).get('devtools') === '1';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
-      <ReactQueryDevtools initialIsOpen={false} />
+      {devtools && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   </StrictMode>
 );

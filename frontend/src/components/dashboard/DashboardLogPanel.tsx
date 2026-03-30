@@ -22,9 +22,9 @@ function formatSessionTimestamp(value: string | null | undefined): string {
 export default function DashboardLogPanel({
   loading,
   latestSession,
-  status,
-  nodes,
-  scanData,
+  status: _status,
+  nodes: _nodes,
+  scanData: _scanData,
 }: DashboardLogPanelProps) {
   const { data: logs, isLoading: logsLoading } = useQuery<SystemLog[]>({
     queryKey: ['logs'],
