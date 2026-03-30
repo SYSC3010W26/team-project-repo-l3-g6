@@ -1,7 +1,7 @@
 export type PipelineStatus = 'idle' | 'scanning' | 'solving' | 'executing' | 'done' | 'error';
 
 export interface JobState {
-  session_id: string;
+  session_id: number;
   status: PipelineStatus;
   created_at: string;
 }
@@ -14,13 +14,13 @@ export interface NodeStatus {
 }
 
 export interface JobStateUpdate {
-  session_id: string;
+  session_id: number;
   status: PipelineStatus;
   node_status: Record<string, boolean>;
 }
 
 export interface ExecutionProgressUpdate {
-  session_id: string;
+  session_id: number;
   current_step: number;
   total_steps: number;
   move: string;
@@ -29,7 +29,7 @@ export interface ExecutionProgressUpdate {
 
 export interface SolveSession {
   session_id: number;
-  status: string;
+  status: PipelineStatus;
   selected_algorithm: string;
   session_name: string | null;
   started_at: string;
@@ -43,9 +43,12 @@ export interface SolutionStep {
 
 export interface SystemLog {
   id: number;
-  node_id: string;
-  severity: 'info' | 'warning' | 'error' | 'fatal';
+  session_id: number | null;
+  node_id: string | null;
+  severity: 'info' | 'warning' | 'error' | 'fatal' | string;
+  event_type: string;
   message: string;
+  metadata: string | null;
   created_at: string;
 }
 

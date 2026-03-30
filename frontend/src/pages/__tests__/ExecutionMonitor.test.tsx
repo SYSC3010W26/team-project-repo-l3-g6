@@ -5,7 +5,7 @@ import { renderWithAppProviders } from '@/test/renderApp';
 import type { ExecutionProgressUpdate, SolutionStep, SolveSession } from '@/types/api';
 
 const mockGetSessions = vi.hoisted(() => vi.fn<() => Promise<SolveSession[]>>());
-const mockGetSolution = vi.hoisted(() => vi.fn<(sessionId: string) => Promise<{ steps: SolutionStep[] }>>());
+const mockGetSolution = vi.hoisted(() => vi.fn<(sessionId: string | number) => Promise<{ steps: SolutionStep[] }>>());
 const mockUseSocketEvent = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/api', () => ({
@@ -47,7 +47,7 @@ describe('ExecutionMonitor', () => {
     });
 
     const progress: ExecutionProgressUpdate = {
-      session_id: '42',
+      session_id: 42,
       current_step: 1,
       total_steps: 2,
       move: "U'",

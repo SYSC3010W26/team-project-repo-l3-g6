@@ -44,8 +44,23 @@ describe('Dashboard Live Updates', () => {
     queryClient = createTestQueryClient();
 
     vi.mocked(api.getAllNodes).mockResolvedValue([]);
-    vi.mocked(api.getSessions).mockResolvedValue([{ session_id: 1, status: 'executing' }]);
-    vi.mocked(api.getScanState).mockResolvedValue({ state_string: SOLVED_STATE });
+    vi.mocked(api.getSessions).mockResolvedValue([
+      {
+        session_id: 1,
+        status: 'executing',
+        selected_algorithm: 'CFOP',
+        session_name: 'Test Session',
+        started_at: '2026-03-30T12:00:00Z',
+        completed_at: null,
+      },
+    ]);
+    vi.mocked(api.getScanState).mockResolvedValue({
+      session_id: 1,
+      state_string: SOLVED_STATE,
+      is_valid: true,
+      confidence: 0.99,
+      created_at: '2026-03-30T12:00:05Z',
+    });
 
     vi.mocked(useSocket.useSocketEvent).mockImplementation((event, handler) => {
       if (event === 'execution_progress') {
@@ -128,13 +143,36 @@ describe('Dashboard Live Updates', () => {
     });
 
     // Update session mock
-    vi.mocked(api.getSessions).mockResolvedValue([{ session_id: 2, status: 'executing' }]);
+    vi.mocked(api.getSessions).mockResolvedValue([
+      {
+        session_id: 2,
+        status: 'executing',
+        selected_algorithm: 'CFOP',
+        session_name: 'Test Session 2',
+        started_at: '2026-03-30T13:00:00Z',
+        completed_at: null,
+      },
+    ]);
     
     // Mock getScanState for session 2 to return a different state
     const NEW_STATE = 'RRRRRRRRRUUUUUUUUUFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
-    vi.mocked(api.getScanState).mockImplementation(async (id: any) => {
-        if (id == '2') return { state_string: NEW_STATE };
-        return { state_string: SOLVED_STATE };
+    vi.mocked(api.getScanState).mockImplementation(async (id: string | number) => {
+        if (String(id) === '2') {
+          return {
+            session_id: 2,
+            state_string: NEW_STATE,
+            is_valid: true,
+            confidence: 0.99,
+            created_at: '2026-03-30T13:00:05Z',
+          };
+        }
+        return {
+          session_id: 1,
+          state_string: SOLVED_STATE,
+          is_valid: true,
+          confidence: 0.99,
+          created_at: '2026-03-30T12:00:05Z',
+        };
     });
 
     // Invalidate queries to trigger update

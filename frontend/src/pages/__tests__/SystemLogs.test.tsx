@@ -16,16 +16,22 @@ describe('SystemLogs', () => {
     const logs: SystemLog[] = [
       {
         id: 1,
+        session_id: 101,
         node_id: 'solver',
         severity: 'fatal',
+        event_type: 'process_panic',
         message: 'Solver thread panic detected',
+        metadata: '{"thread_id": 42}',
         created_at: '2026-03-27T12:00:00Z',
       },
       {
         id: 2,
+        session_id: 101,
         node_id: 'scanner',
         severity: 'error',
+        event_type: 'queue_overflow',
         message: 'Scanner queue overflow',
+        metadata: null,
         created_at: '2026-03-27T12:00:05Z',
       },
     ];

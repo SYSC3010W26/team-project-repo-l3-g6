@@ -52,7 +52,7 @@ export default function ErrorBanner() {
   if (!showBanner) return null;
 
   const guidance =
-    RECOVERY_GUIDANCE[latestFatal.node_id] ?? FALLBACK_GUIDANCE;
+    latestFatal.node_id ? (RECOVERY_GUIDANCE[latestFatal.node_id] ?? FALLBACK_GUIDANCE) : FALLBACK_GUIDANCE;
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-red-900/95 border-b border-red-600 px-4 py-3 flex items-start justify-between gap-4">
@@ -64,7 +64,7 @@ export default function ErrorBanner() {
         <div className="min-w-0">
           <p className="text-red-100 font-semibold text-sm leading-snug break-words">
             <span className="uppercase tracking-wide text-red-400 text-xs mr-2">
-              [{latestFatal.node_id.toUpperCase()}]
+              [{latestFatal.node_id?.toUpperCase() ?? 'SYSTEM'}]
             </span>
             {latestFatal.message}
           </p>

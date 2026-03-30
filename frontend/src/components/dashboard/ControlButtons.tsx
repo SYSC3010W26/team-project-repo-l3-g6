@@ -15,7 +15,7 @@ import type { PipelineStatus } from '@/types/api';
 
 interface Props {
   status: PipelineStatus;
-  sessionId: string | null;
+  sessionId: number | string | null;
   onAction: (action: string) => void;
   loading?: boolean;
 }
