@@ -24,6 +24,8 @@ from backend.sio_instance import sio
 from backend.routers import jobs, scan, solve, execute, nodes, logs
 from backend.heartbeat import heartbeat_monitor
 from backend.motor_timeout import motor_execution_timeout_monitor
+from database.init_db import create_tables
+from database.db import get_db
 
 # ---------------------------------------------------------------------------
 # FastAPI app
@@ -44,7 +46,15 @@ fastapi_app.add_middleware(
 
 @fastapi_app.on_event("startup")
 async def startup_event():
-    """Start background tasks on server boot (D-08)."""
+    """Initialize database and start background tasks on server boot (D-08)."""
+    # Initialize database schema if tables don't exist
+    conn = get_db()
+    try:
+        create_tables(conn)
+    finally:
+        conn.close()
+    
+    # Start background tasks
     asyncio.create_task(heartbeat_monitor())
     asyncio.create_task(motor_execution_timeout_monitor())
 
