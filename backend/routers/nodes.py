@@ -40,7 +40,7 @@ def get_node_status(conn: sqlite3.Connection = Depends(get_db_dep)):
             node_id=r["node_id"],
             node_type=r["node_type"],
             ip_address=r.get("ip_address"),
-            status=r["status"],
+            is_online=r["status"].lower() == "online",
             last_heartbeat=r["last_heartbeat"],
             last_message=r.get("last_message"),
         )
