@@ -39,8 +39,15 @@ echo -e "${NC}"
 
 # ── Get this Pi's IP ────────────────────────────────────────
 MY_IP=$(hostname -I | awk '{print $1}')
+TAILSCALE_IP=$(tailscale status 2>/dev/null | grep "^\s" | awk 'NR==1 {print $1}' || echo "")
+
 echo -e "${BLUE}📡 Your Pi's IP address: ${GREEN}${MY_IP}${NC}"
-echo -e "${BLUE}   Tell your teammates to set: ${YELLOW}PI_SERVER_IP=${MY_IP}${NC}"
+if [ -n "$TAILSCALE_IP" ]; then
+    echo -e "${BLUE}📡 Tailscale IP address: ${GREEN}${TAILSCALE_IP}${NC} ${YELLOW}(Use this for remote teammates)${NC}"
+    echo -e "${BLUE}   Tell your teammates to set: ${YELLOW}PI_SERVER_IP=${TAILSCALE_IP}${NC}"
+else
+    echo -e "${BLUE}   Tell your teammates to set: ${YELLOW}PI_SERVER_IP=${MY_IP}${NC}"
+fi
 echo ""
 
 # ── Check prerequisites ────────────────────────────────────
@@ -160,11 +167,20 @@ echo -e "  ${BLUE}API:${NC}            http://${MY_IP}:8000"
 echo -e "  ${BLUE}API Health:${NC}     http://${MY_IP}:8000/"
 echo ""
 echo -e "  ${YELLOW}📋 For your teammates:${NC}"
-echo -e "     Set ${GREEN}PI_SERVER_IP=${MY_IP}${NC} in their .env"
+if [ -n "$TAILSCALE_IP" ]; then
+    echo -e "     Set ${GREEN}PI_SERVER_IP=${TAILSCALE_IP}${NC} in their .env (Tailscale)"
+else
+    echo -e "     Set ${GREEN}PI_SERVER_IP=${MY_IP}${NC} in their .env (Local Network)"
+fi
 echo -e "     Then run ${GREEN}./start_node.sh${NC} on their Pi"
 echo ""
 echo -e "  ${YELLOW}📱 Open dashboard on any device:${NC}"
-echo -e "     http://${MY_IP}:5173"
+if [ -n "$TAILSCALE_IP" ]; then
+    echo -e "     http://${TAILSCALE_IP}:5173 (Tailscale)"
+    echo -e "     http://${MY_IP}:5173 (Local Network)"
+else
+    echo -e "     http://${MY_IP}:5173"
+fi
 echo ""
 echo -e "  ${YELLOW}📄 Logs:${NC}"
 echo -e "     Backend:  tail -f /tmp/pi3-backend.log"

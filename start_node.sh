@@ -90,6 +90,10 @@ if [ -z "$NODE_TYPE" ]; then
             exit 1
             ;;
     esac
+else
+    echo ""
+    echo -e "${BLUE}🏷️  Node type already configured: ${GREEN}${NODE_TYPE}${NC}"
+    echo -e "${YELLOW}   (from .env file)${NC}"
 fi
 
 NODE_ID="${NODE_ID:-${NODE_TYPE}-node}"
