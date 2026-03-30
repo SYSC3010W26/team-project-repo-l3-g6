@@ -18,7 +18,7 @@ import requests
 # Import modules under test
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
-from scanner_bridge import ScanResult, ScannerAPIClient
+from Scanner.scanner_bridge import ScanResult, ScannerAPIClient
 
 # ─────────────────────────────────────────────────────────────────────────────
 # FIXTURES

@@ -31,7 +31,7 @@ from datetime import datetime
 
 # Configuration
 try:
-    from pi_config import SERVER_URL, HEARTBEAT_INTERVAL
+    from Scanner.pi_config import SERVER_URL, HEARTBEAT_INTERVAL
 except ImportError:
     SERVER_IP = os.getenv("PI_SERVER_IP", "localhost")
     SERVER_PORT = os.getenv("PI_SERVER_PORT", "8000")

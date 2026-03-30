@@ -8,15 +8,13 @@ Simulates the full pipeline (Scan → Solve → Execute) by hitting
 the backend REST API. No hardware required — run this alongside
 the backend to see the dashboard come alive.
 
-Uses Luke's CFOP solver to generate real solutions from actual cube states.
-
 Usage:
     1. Start backend:   uvicorn backend.main:app --host 0.0.0.0 --port 8000
     2. Start frontend:  cd frontend && npm run dev
-    3. Run this script: python locale2etest.py
+    3. Run this script: python simulate_demo.py
 
 You can also point it at a remote server:
-    PI_SERVER_IP=192.168.1.100 python locale2etest.py
+    PI_SERVER_IP=192.168.1.100 python simulate_demo.py
 ============================================================
 """
 import requests
@@ -26,13 +24,9 @@ import sys
 import os
 import argparse
 
-# Add solver directory to path so we can import Luke's solver
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'solver'))
-from Solver import Solver, CubeNotSolvableError
-
 # Use central config if available, otherwise fall back to env/defaults
 try:
-    from pi_config import SERVER_URL, HEARTBEAT_INTERVAL
+    from Scanner.pi_config import SERVER_URL, HEARTBEAT_INTERVAL
 except ImportError:
     SERVER_IP = os.getenv("PI_SERVER_IP", "localhost")
     SERVER_PORT = os.getenv("PI_SERVER_PORT", "8000")
@@ -42,13 +36,17 @@ except ImportError:
 API = SERVER_URL
 
 # ── Simulated cube state (scrambled) ────────────────────────
-# Use a real valid scramble from the solver
-solver_instance = Solver()
-SCRAMBLE = solver_instance.scramble(length=20)
-SCRAMBLED_CUBE = solver_instance.get_state_string()
+SCRAMBLED_CUBE = (
+    "RRGGBBOOWW"
+    "YYRRGGBBOO"
+    "WWYYRRGGO"
+    "OBWYRGOBY"
+    "WGROBYWGR"
+    "BYOWG"
+)[:54].ljust(54, "W")  # pad to 54 chars
 
-print(f"✨ Generated scramble: {SCRAMBLE}")
-print(f"✨ Scrambled cube state: {SCRAMBLED_CUBE}")
+# ── Simulated solution ──────────────────────────────────────
+SOLUTION_MOVES = "R U R' U' F' D2 L B L' B' R U2 R' U F R U R' U'"
 
 
 def heartbeat_loop(nodes: list[str], stop_event: threading.Event):
@@ -128,45 +126,23 @@ def run_demo(keep_alive: bool = True):
 
     time.sleep(2)
 
-    # Step 4: Solve the cube using Luke's solver
-    print("\n── Step 4: Solver computing solution ──")
-    try:
-        solver = Solver()
-        solver.load_state(SCRAMBLED_CUBE)
-        solution_moves_str = solver.solve()
-        if not solution_moves_str:
-            print("   Cube is already solved! Using empty solution.")
-            moves = []
-        else:
-            moves = solution_moves_str.split()
-        print(f"   Solution found ({len(moves)} moves): {solution_moves_str if solution_moves_str else '(none)'}")
-    except CubeNotSolvableError as e:
-        print(f"   ❌ Cube state is invalid: {e}")
-        stop.set()
-        return
-    except ValueError as e:
-        print(f"   ❌ Error loading cube state: {e}")
-        stop.set()
-        return
-
-    time.sleep(1)
-
-    # Step 5: Submit solution
-    print("\n── Step 5: Submitting solution to backend ──")
+    # Step 4: Submit solution
+    print("\n── Step 4: Solver submitting solution ──")
+    moves = SOLUTION_MOVES.split()
     r = requests.post(f"{API}/solve/submit", json={
         "session_id": session_id,
         "algorithm_used": "CFOP",
         "move_count": len(moves),
-        "solution_string": solution_moves_str if solution_moves_str else "",
+        "solution_string": SOLUTION_MOVES,
     })
     solution_resp = r.json()
     solution_id = solution_resp["solution_id"]
-    print(f"   Solution ID: {solution_id}")
+    print(f"   Solution submitted ({len(moves)} moves), ID: {solution_id}")
 
     time.sleep(2)
 
-    # Step 6: Transition to executing
-    print("\n── Step 6: Transitioning to executing ──")
+    # Step 5: Transition to executing
+    print("\n── Step 5: Transitioning to executing ──")
     r = requests.post(f"{API}/jobs/{session_id}/transition", json={"to": "executing"})
     if r.status_code == 200:
         print(f"   Status → executing")
@@ -183,25 +159,22 @@ def run_demo(keep_alive: bool = True):
 
     time.sleep(1)
 
-    # Step 7: Motor executing moves
-    if moves:
-        print("\n── Step 7: Motor executing moves ──")
-        for i, move in enumerate(moves):
-            print(f"   [{i+1}/{len(moves)}] {move}")
-            # Report progress to backend (triggers WebSocket event for dashboard)
-            requests.post(f"{API}/execute/progress", json={
-                "session_id": session_id,
-                "run_id": run_id,
-                "current_step": i + 1,
-                "total_steps": len(moves),
-                "move": move
-            })
-            time.sleep(0.5)
-    else:
-        print("\n── Step 7: No moves to execute (cube already solved) ──")
+    # Step 6: Motor executing moves
+    print("\n── Step 6: Motor executing moves ──")
+    for i, move in enumerate(moves):
+        print(f"   [{i+1}/{len(moves)}] {move}")
+        # Report progress to backend (triggers WebSocket event for dashboard)
+        requests.post(f"{API}/execute/progress", json={
+            "session_id": session_id,
+            "run_id": run_id,
+            "current_step": i + 1,
+            "total_steps": len(moves),
+            "move": move
+        })
+        time.sleep(0.5)
 
-    # Step 8: Mark as done
-    print("\n── Step 8: Completing ──")
+    # Step 7: Mark as done
+    print("\n── Step 7: Completing ──")
     # Mark execution run as success
     requests.post(f"{API}/execute/complete", json={
         "session_id": session_id,
@@ -220,7 +193,7 @@ def run_demo(keep_alive: bool = True):
         current_status = r_state.json()["status"]
         print(f"   Status → {current_status} ✅")
 
-    print("\n🎉 Demo complete! Check the dashboard at http://localhost:5173")
+    print("\n🎉 Demo complete! Check the dashboard at http://localhost:4173")
 
     if not keep_alive:
         stop.set()

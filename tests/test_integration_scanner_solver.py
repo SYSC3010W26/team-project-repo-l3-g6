@@ -184,7 +184,7 @@ class TestScannerSolverIntegration:
         
         print(f"\n[TEST] Scanner bridge session ID provisioning")
         
-        from scanner_bridge import ScannerAPIClient
+        from Scanner.scanner_bridge import ScannerAPIClient
         from unittest.mock import Mock, patch
         
         # Scenario 1: Manual env var
