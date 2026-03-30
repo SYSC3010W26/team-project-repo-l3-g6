@@ -3,6 +3,11 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
+const proxyConfig = {
+  '/api': { target: 'http://localhost:8000', rewrite: (p: string) => p.replace(/^\/api/, '') },
+  '/socket.io': { target: 'http://localhost:8000', ws: true },
+};
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -11,9 +16,11 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    proxy: {
-      '/api': { target: 'http://localhost:8000', rewrite: (p) => p.replace(/^\/api/, '') },
-      '/socket.io': { target: 'http://localhost:8000', ws: true },
-    },
+    proxy: proxyConfig,
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 5173,
+    proxy: proxyConfig,
   },
 })
