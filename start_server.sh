@@ -173,12 +173,26 @@ echo ""
 echo -e "  Press ${RED}Ctrl+C${NC} to stop everything"
 echo ""
 
+# ── Start Database Heartbeat ───────────────────────────────
+echo ""
+echo -e "${BLUE}💓 Starting Database Pi heartbeat loop...${NC}"
+(
+  while true; do
+    curl -s -X POST "http://127.0.0.1:8000/nodes/heartbeat" \
+         -H "Content-Type: application/json" \
+         -d '{"node_id": "rpi4-db", "node_type": "database", "status": "online"}' > /dev/null
+    sleep 3
+  done
+) &
+DB_HEARTBEAT_PID=$!
+
 # ── Trap Ctrl+C to clean up ────────────────────────────────
 cleanup() {
     echo ""
     echo -e "${YELLOW}🛑 Shutting down...${NC}"
     kill $BACKEND_PID 2>/dev/null
     kill $FRONTEND_PID 2>/dev/null
+    kill $DB_HEARTBEAT_PID 2>/dev/null
     echo -e "${GREEN}   Done. Goodbye!${NC}"
     exit 0
 }
