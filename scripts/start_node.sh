@@ -96,6 +96,20 @@ else
     echo -e "${YELLOW}   (from .env file)${NC}"
 fi
 
+# ── Get Session ID (Scanner Pi only) ────────────────────────
+if [ "$NODE_TYPE" = "scanner" ] && [ -z "$SESSION_ID" ]; then
+    echo ""
+    echo -e "${YELLOW}🔑 Scanner needs a Session ID to post scans.${NC}"
+    echo -e "   Find this on the central server's dashboard."
+    echo ""
+    read -p "   Session ID: " SESSION_ID
+
+    if [ -z "$SESSION_ID" ]; then
+        echo -e "${RED}❌ No Session ID provided. Exiting.${NC}"
+        exit 1
+    fi
+fi
+
 NODE_ID="${NODE_ID:-${NODE_TYPE}-node}"
 echo -e "${BLUE}🏷️  Node: ${GREEN}${NODE_ID}${NC} (${NODE_TYPE})"
 
@@ -124,6 +138,7 @@ PI_SERVER_IP=${PI_SERVER_IP}
 PI_SERVER_PORT=${PI_SERVER_PORT}
 NODE_ID=${NODE_ID}
 NODE_TYPE=${NODE_TYPE}
+SESSION_ID=${SESSION_ID}
 HEARTBEAT_INTERVAL=3
 # Motor Pi only:
 SERVER_URL=${SERVER_URL}
