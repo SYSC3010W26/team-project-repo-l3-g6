@@ -190,12 +190,27 @@ echo ""
 
 # Run the heartbeat client alongside the subsystem
 python3 -c "
-import os, sys, time, threading, requests, subprocess
+import os, sys, time, threading, requests, subprocess, signal
 
 SERVER = '${SERVER_URL}'
 NODE_ID = '${NODE_ID}'
 NODE_TYPE = '${NODE_TYPE}'
 INTERVAL = 3
+PROCESSES = []
+
+def signal_handler(sig, frame):
+    print(f'\n🛑 Received signal {sig}. Terminating child processes...')
+    for p in PROCESSES:
+        try:
+            p.terminate()
+            p.wait(timeout=2)
+        except:
+            try: p.kill()
+            except: pass
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 def heartbeat():
     while True:
@@ -215,37 +230,51 @@ def heartbeat():
             print(f'[Heartbeat] Error: {e}', file=sys.stderr)
         time.sleep(INTERVAL)
 
+def run_subsystem(command, cwd, env):
+    while True:
+        try:
+            print(f'🚀 Launching {\" \".join(command)} in {cwd}...')
+            p = subprocess.Popen(command, cwd=cwd, env=env)
+            PROCESSES.append(p)
+            p.wait()
+            if p in PROCESSES:
+                PROCESSES.remove(p)
+            print(f'⚠️  Process {\" \".join(command)} exited. Restarting in 5s...')
+        except Exception as e:
+            print(f'❌ Subsystem Error: {e}', file=sys.stderr)
+        time.sleep(5)
+
 if NODE_TYPE == 'scanner':
     SESSION_ID = os.environ.get('SESSION_ID')
     if SESSION_ID:
-        print(f'🚀 Launching scanner_bridge.py (Session: {SESSION_ID})...')
         env = os.environ.copy()
         env['API_BASE_URL'] = SERVER
-        subprocess.Popen([sys.executable, 'scanner_bridge.py'], cwd='Scanner', env=env)
+        t_sub = threading.Thread(target=run_subsystem, args=([sys.executable, 'scanner_bridge.py'], 'Scanner', env), daemon=True)
+        t_sub.start()
     else:
         print(f'⚠️  Warning: SESSION_ID not found in environment. scanner_bridge.py will not start.', file=sys.stderr)
 elif NODE_TYPE == 'solver':
-    print(f'🚀 Launching solver_listener.py...')
     env = os.environ.copy()
     env['API_BASE_URL'] = SERVER
-    # solver_listener.py is in the solver/ directory
-    subprocess.Popen([sys.executable, 'solver_listener.py'], cwd='solver', env=env)
+    t_sub = threading.Thread(target=run_subsystem, args=([sys.executable, 'solver_listener.py'], 'solver', env), daemon=True)
+    t_sub.start()
 
 # Start heartbeat in background
-t = threading.Thread(target=heartbeat, daemon=True)
-t.start()
+t_hb = threading.Thread(target=heartbeat, daemon=True)
+t_hb.start()
 print(f'💓 Heartbeat running for {NODE_ID} ({NODE_TYPE})')
 print(f'   Sending to {SERVER}/nodes/heartbeat every {INTERVAL}s')
 print(f'   Check dashboard: http://${PI_SERVER_IP}:5173')
+print()
+
+print(f'🟢 {NODE_TYPE.title()} node online. Heartbeat active.')
+print(f'   Press Ctrl+C to stop.')
 print()
 
 # Keep alive — subsystem code would go here
 # For scanner: import and run scan loop
 # For solver:  import and run solver listener  
 # For motor:   import and run motor state machine
-print(f'🟢 {NODE_TYPE.title()} node online. Heartbeat active.')
-print(f'   Press Ctrl+C to stop.')
-print()
 
 # If the subsystem has a main entry point, uncomment the relevant line:
 # Scanner:  exec(open('UnitTests/Scanner/test_camera.py').read())
@@ -255,7 +284,7 @@ try:
     while True:
         time.sleep(1)
 except KeyboardInterrupt:
-    print('\n👋 Node stopped.')
+    pass
 " &
 NODE_PID=$!
 
@@ -277,6 +306,7 @@ cleanup() {
     echo ""
     echo -e "${YELLOW}🛑 Shutting down ${NODE_TYPE} node...${NC}"
     kill $NODE_PID 2>/dev/null
+    [ -n "$CAMERA_PID" ] && kill $CAMERA_PID 2>/dev/null
     echo -e "${GREEN}   Done. Goodbye!${NC}"
     exit 0
 }
