@@ -157,10 +157,20 @@ done
 
 # ── Start Frontend ─────────────────────────────────────────
 echo ""
-echo -e "${BLUE}🌐 Starting frontend server...${NC}"
+echo -e "${BLUE}⚛️  Building frontend for production...${NC}"
 
 cd frontend
-npm run dev -- --host 0.0.0.0 > /tmp/pi3-frontend.log 2>&1 &
+npm run build > /tmp/pi3-frontend-build.log 2>&1
+if [ $? -ne 0 ]; then
+    echo -e "   ${RED}❌ Frontend build failed. Check /tmp/pi3-frontend-build.log${NC}"
+    cat /tmp/pi3-frontend-build.log
+    kill $BACKEND_PID 2>/dev/null
+    exit 1
+fi
+echo -e "   ${GREEN}✓${NC} Frontend built successfully"
+
+echo -e "${BLUE}🌐 Starting frontend server...${NC}"
+npm run preview -- --host 0.0.0.0 > /tmp/pi3-frontend.log 2>&1 &
 FRONTEND_PID=$!
 cd ..
 sleep 3
