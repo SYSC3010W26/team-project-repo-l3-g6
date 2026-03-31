@@ -117,7 +117,7 @@ async def submit_solution(body: schemas.SolveSubmitRequest, conn: sqlite3.Connec
             )
         )
 
-    crud.update_solve_session_status(conn, body.session_id, "solved")
+    crud.update_solve_session_status(conn, body.session_id, "done")
     
     # Emit via socket.io
     await sio.emit("solve_complete", {

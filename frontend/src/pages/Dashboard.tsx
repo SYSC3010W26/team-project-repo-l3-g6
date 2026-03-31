@@ -10,7 +10,7 @@ import CubeViewer3D from '@/components/dashboard/CubeViewer3D';
 import DashboardLogPanel from '@/components/dashboard/DashboardLogPanel';
 import { getAllNodes, getSessions, startSolve, postControlFlag, getScanState } from '@/lib/api';
 import { useSocketEvent } from '@/hooks/useSocket';
-import { applyMove } from '@/lib/cube';
+import { applyMove, SOLVED_STATE } from '@/lib/cube';
 import type { PipelineStatus, NodeStatus, CubeState } from '@/types/api';
 
 const NODE_DISPLAY_NAMES: Record<string, string> = {
@@ -56,12 +56,16 @@ export default function Dashboard() {
   const [animatingMove, setAnimatingMove] = useState<string | undefined>(undefined);
 
   // Sync liveCubeState with scanData when it's first available or when session changes
+  // OR snap to solved when session is 'done'
   useEffect(() => {
-    if (scanData?.state_string) {
+    if (status === 'done') {
+      setLiveCubeState(SOLVED_STATE);
+      setAnimatingMove(undefined);
+    } else if (scanData?.state_string) {
       setLiveCubeState(scanData.state_string);
       setAnimatingMove(undefined);
     }
-  }, [scanData?.state_string, sessionId]);
+  }, [scanData?.state_string, sessionId, status]);
 
   useSocketEvent('execution_progress', (data) => {
     if (String(data.session_id) === String(sessionId) && data.move) {
