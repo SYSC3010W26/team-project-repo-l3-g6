@@ -108,7 +108,7 @@ cd ..
 # ── Write .env for this Pi ─────────────────────────────────
 # Preserve VITE_SCANNER_IP if it already exists in environment or .env
 VITE_SCANNER_IP="${VITE_SCANNER_IP:-$(grep VITE_SCANNER_IP .env 2>/dev/null | cut -d'=' -f2)}"
-VITE_SCANNER_IP="${VITE_SCANNER_IP:-localhost}"
+VITE_SCANNER_IP="${VITE_SCANNER_IP:-100.111.54.24}"
 export VITE_SCANNER_IP
 
 cat > .env <<EOF
