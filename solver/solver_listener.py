@@ -100,12 +100,16 @@ class SolverListener:
     def poll_for_jobs(self):
         """Find sessions with status 'solving'."""
         try:
+            print(f"🔍 Polling {self.base_url}/jobs...")
             response = requests.get(f"{self.base_url}/jobs", timeout=5.0)
             response.raise_for_status()
             jobs = response.json()
-            return [j for j in jobs if j["status"] == "solving"]
+            active = [j for j in jobs if j["status"] == "solving"]
+            if active:
+                print(f"✅ Found {len(active)} active jobs!")
+            return active
         except Exception as e:
-            logger.error(f"Error polling for jobs: {e}")
+            print(f"❌ Error polling for jobs: {e}")
             return []
 
     def get_cube_state(self, session_id: int) -> Optional[str]:
@@ -141,27 +145,29 @@ class SolverListener:
         session_id = job["session_id"]
         algorithm = job["selected_algorithm"]
         
-        logger.info(f"Processing session {session_id} (Algorithm: {algorithm})")
+        print(f"🧠 Processing session {session_id} (Algorithm: {algorithm})...")
         
         state_string = self.get_cube_state(session_id)
         if not state_string:
-            logger.warning(f"Could not retrieve cube state for session {session_id}. Skipping.")
+            print(f"⚠️  Could not retrieve cube state for session {session_id}. Skipping.")
             return
 
         try:
             # Transform colors to face letters
+            print(f"🎨 Transforming colors: {state_string}")
             face_string = transform_colors_to_faces(state_string)
-            logger.debug(f"Transformed state: {face_string}")
+            print(f"🧩 Face string: {face_string}")
             
             # Load and solve
             self.solver.select_algorithm(algorithm)
             self.solver.load_state(face_string)
+            print(f"⚡ Running {algorithm} solver...")
             solution = self.solver.solve()
+            print(f"🎉 Solution found! {solution}")
             
             # Submit
             self.submit_solution(session_id, algorithm, solution)
-            
-        except CubeNotSolvableError as e:
+            print(f"🏁 Solution submitted to backend.")
             logger.error(f"Cube not solvable for session {session_id}: {e}")
             # Optional: Transition session to 'error' status
             self.report_error(session_id, str(e))
