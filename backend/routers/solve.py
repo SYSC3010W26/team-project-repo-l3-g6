@@ -11,7 +11,8 @@ All DB access via database.crud functions through Depends(get_db_dep).
 import sqlite3
 from fastapi import APIRouter, Depends, HTTPException
 from database import crud
-from database.models import SolutionCreate, SolutionStepCreate
+from database.models import SolutionCreate, SolutionStepCreate, ExecutionRunCreate
+from database.crud import create_execution_run
 from backend.deps import get_db_dep
 from backend import schemas
 from backend.sio_instance import sio
@@ -117,16 +118,34 @@ async def submit_solution(body: schemas.SolveSubmitRequest, conn: sqlite3.Connec
             )
         )
 
-    crud.update_solve_session_status(conn, body.session_id, "done")
-    
-    # Emit via socket.io
+    # Emit solve_complete to dashboard
     await sio.emit("solve_complete", {
         "session_id": body.session_id,
         "solution_id": solution_id,
         "move_count": body.move_count,
         "solution_string": body.solution_string
     })
-    
+
+    # Auto-trigger motor execution: transition to executing, emit to Motor Pi
+    crud.update_solve_session_status(conn, body.session_id, "executing")
+    run_id = create_execution_run(conn, ExecutionRunCreate(
+        session_id=body.session_id,
+        solution_id=solution_id,
+        status="executing",
+        motor_node_id="motor-node",
+    ))
+
+    # Send moves to Motor Pi via Socket.IO
+    await sio.emit("load_moves", {"moves": body.solution_string})
+    await sio.emit("start_solve", {})
+
+    # Broadcast executing state to dashboard
+    await sio.emit("job_state_update", {
+        "session_id": body.session_id,
+        "status": "executing",
+        "node_status": {},
+    })
+
     return schemas.SolveSubmitResponse(solution_id=solution_id)
 
 

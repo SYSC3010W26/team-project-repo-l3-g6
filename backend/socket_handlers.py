@@ -77,11 +77,14 @@ async def on_complete(sid, data):
     """Motor Pi execution finished notification.
 
     Receives: {'node_id': str, 'status': 'success'|'failed'}
-    Writes a system log entry, then broadcasts job_state_update with terminal status.
+    Writes a system log entry, updates the active execution session to done/error,
+    then broadcasts job_state_update with terminal status.
     """
     node_id = data.get("node_id", "unknown")
     status = data.get("status", "unknown")
+    broadcast_status = "done" if status == "success" else "error"
 
+    session_id = None
     with db_session() as conn:
         crud.create_log(
             conn,
@@ -92,11 +95,25 @@ async def on_complete(sid, data):
                 message=f"Node {node_id} execution finished with status: {status}",
             ),
         )
+        # Find the executing session and transition it to done/error
+        row = conn.execute(
+            "SELECT id FROM solve_sessions WHERE status = 'executing' ORDER BY started_at DESC LIMIT 1"
+        ).fetchone()
+        if row:
+            session_id = row[0]
+            crud.update_solve_session_status(conn, session_id, broadcast_status)
+            # Mark the execution run as completed/failed
+            run_row = conn.execute(
+                "SELECT id FROM execution_runs WHERE session_id = ? AND status = 'executing' ORDER BY started_at DESC LIMIT 1",
+                (session_id,)
+            ).fetchone()
+            if run_row:
+                db_run_status = "completed" if status == "success" else "failed"
+                crud.update_execution_run_status(conn, run_row[0], db_run_status)
 
-    broadcast_status = "done" if status == "success" else "error"
     await sio.emit(
         "job_state_update",
-        {"session_id": None, "status": broadcast_status, "node_status": {}},
+        {"session_id": session_id, "status": broadcast_status, "node_status": {}},
     )
 
 

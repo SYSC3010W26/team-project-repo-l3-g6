@@ -20,7 +20,7 @@ router = APIRouter()
 
 
 @router.post("/start", response_model=schemas.ExecuteStartResponse)
-def start_execution(body: schemas.ExecuteStartRequest, conn: sqlite3.Connection = Depends(get_db_dep)):
+async def start_execution(body: schemas.ExecuteStartRequest, conn: sqlite3.Connection = Depends(get_db_dep)):
     session = crud.get_solve_session_by_id(conn, body.session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session {body.session_id} not found")
@@ -29,6 +29,7 @@ def start_execution(body: schemas.ExecuteStartRequest, conn: sqlite3.Connection 
     matching = [s for s in solutions if s["id"] == body.solution_id]
     if not matching:
         raise HTTPException(status_code=404, detail=f"Solution {body.solution_id} not found for session {body.session_id}")
+    solution_string = matching[0].get("solution_string", "")
     data = ExecutionRunCreate(
         session_id=body.session_id,
         solution_id=body.solution_id,
@@ -37,6 +38,19 @@ def start_execution(body: schemas.ExecuteStartRequest, conn: sqlite3.Connection 
     )
     run_id = crud.create_execution_run(conn, data)
     crud.update_solve_session_status(conn, body.session_id, "executing")
+
+    # Emit load_moves then start_solve to Motor Pi via Socket.IO
+    # Motor Pi listens for these events on its sio client (server_bridge.py)
+    await sio.emit("load_moves", {"moves": solution_string})
+    await sio.emit("start_solve", {})
+
+    # Broadcast execution started to dashboard
+    await sio.emit("job_state_update", {
+        "session_id": body.session_id,
+        "status": "executing",
+        "node_status": {},
+    })
+
     return schemas.ExecuteStartResponse(run_id=run_id)
 
 
