@@ -43,14 +43,14 @@ def run_sim():
 
     # 1. Check if Solver Pi is online
     try:
-        r = requests.get(f"{SERVER_URL}/nodes/")
+        r = requests.get(f"{SERVER_URL}/nodes/status")
         nodes = r.json()
-        solver_online = any(n['node_type'] == 'solver' and n['status'] == 'online' for n in nodes)
+        solver_online = any(n['node_type'] == 'solver' and n['is_online'] for n in nodes)
         if not solver_online:
             print("⚠️  Warning: Solver Pi (Luke) is OFFLINE. Simulation might hang.")
     except Exception as e:
-        print(f"❌ Error connecting to server: {e}")
-        return
+        print(f"❌ Error checking solver status: {e}")
+        # Continue anyway in case heartbeat is just slow
 
     # 2. Connect to Socket.IO for animations
     try:
