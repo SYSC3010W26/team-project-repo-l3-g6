@@ -8,7 +8,6 @@ import NodeHealthCard from '@/components/dashboard/NodeHealthCard';
 import ControlButtons from '@/components/dashboard/ControlButtons';
 import CubeViewer3D from '@/components/dashboard/CubeViewer3D';
 import DashboardLogPanel from '@/components/dashboard/DashboardLogPanel';
-import ScannerCameraFeed from '@/components/dashboard/ScannerCameraFeed';
 import { getAllNodes, getSessions, startSolve, postControlFlag, getScanState } from '@/lib/api';
 import { useSocketEvent } from '@/hooks/useSocket';
 import { applyMove } from '@/lib/cube';
@@ -120,14 +119,6 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
-
-      {/* Live Scanner Camera Feed - New Row */}
-      <section className="grid grid-cols-1 gap-5">
-        <ScannerCameraFeed 
-          scannerIp={import.meta.env.VITE_SCANNER_IP || 'localhost'}
-          sessionActive={status === 'scanning'}
-        />
-      </section>
 
       <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
         <Card className="glass border-kl-outline-variant/70 xl:col-span-7">
