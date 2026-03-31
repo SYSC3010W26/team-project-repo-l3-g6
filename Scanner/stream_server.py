@@ -205,9 +205,13 @@ def capture_frames_usb():
 def capture_frames_offline():
     """Generate offline pattern when no camera available"""
     global current_frame
+    import numpy as np
     
     while True:
-        frame = cv2.Mat(FRAME_HEIGHT, FRAME_WIDTH, cv2.CV_8UC3, (30, 30, 30))
+        # Create a dark grey placeholder using numpy
+        frame = np.zeros((FRAME_HEIGHT, FRAME_WIDTH, 3), dtype=np.uint8)
+        frame[:] = (30, 30, 30)
+        
         cv2.putText(frame, "CAMERA OFFLINE", (FRAME_WIDTH//2 - 180, FRAME_HEIGHT//2 - 40),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
         cv2.putText(frame, "Check stream_server.py on Scanner Pi", 
