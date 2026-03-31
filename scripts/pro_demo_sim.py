@@ -14,6 +14,7 @@ import os
 import time
 import requests
 import socketio
+import threading
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,6 +27,25 @@ DASHBOARD_URL = f"http://{SERVER_IP}:5173"
 # Scrambled state for demo (Color-coded like a real scan)
 # This is a valid, solvable scrambled cube
 SCRAMBLED_STATE = "OGGWWWWWWRRRRRRRRRGGGGGGOOOYYYYYYYYYOOOOOOGGGBBBBBBBBB"
+
+# --- Heartbeat Thread (Ghost Mode) ---
+def start_ghost_heartbeats():
+    """Sends heartbeats for Motor Pi so server doesn't kill the job."""
+    def heartbeat_loop():
+        print("👻 Ghost Mode: Sending Motor Pi heartbeats...")
+        while True:
+            try:
+                requests.post(f"{SERVER_URL}/nodes/heartbeat", json={
+                    "node_id": "rpi3-motors",
+                    "node_type": "motor",
+                    "status": "online"
+                }, timeout=2)
+            except:
+                pass
+            time.sleep(2)
+    
+    t = threading.Thread(target=heartbeat_loop, daemon=True)
+    t.start()
 
 # --- Socket.IO setup ---
 sio = socketio.Client()
@@ -41,6 +61,9 @@ def disconnect():
 def run_sim():
     print(f"🚀 Starting High-Fidelity Demo Sim...")
     print(f"📡 Server: {SERVER_URL}")
+
+    # Start ghost heartbeats for Motor Pi
+    start_ghost_heartbeats()
 
     # 1. Check if Solver Pi is online
     try:
