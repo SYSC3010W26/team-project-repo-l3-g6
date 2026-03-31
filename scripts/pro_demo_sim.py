@@ -23,8 +23,9 @@ SERVER_IP = os.getenv("PI_SERVER_IP", "localhost")
 SERVER_URL = f"http://{SERVER_IP}:8000"
 DASHBOARD_URL = f"http://{SERVER_IP}:5173"
 
-# Scrambled state for demo (solvable)
-SCRAMBLED_STATE = "DUUBULDBFRBFRRULLLBRDFFFDRFDFDRDDUUBLRBLLRRLFBRFLBBUFL"
+# Scrambled state for demo (Color-coded like a real scan)
+# This is a valid, solvable scrambled cube
+SCRAMBLED_STATE = "OGGWWWWWWRRRRRRRRRGGGGGGOOOYYYYYYYYYOOOOOOGGGBBBBBBBBB"
 
 # --- Socket.IO setup ---
 sio = socketio.Client()
