@@ -11,6 +11,9 @@ import logging
 MOONRAKER_BASE = os.getenv("MOONRAKER_URL", "http://localhost:7125")
 MOONRAKER_URL = f"{MOONRAKER_BASE}/printer/gcode/script"
 
+# Tweakable delay between moves in milliseconds (0 = no visible delay)
+MOVE_DELAY_MS = int(os.getenv("MOVE_DELAY_MS", "0"))
+
 # Configure logging for motor operations
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -62,8 +65,9 @@ async def execute_move_sequence(moves_str: str) -> bool:
         macro = translate_singmaster_to_macro(m)
         if macro:
             gcode_commands.append(macro)
-            # G4 P0 is a dwell to ensure the buffer is processed correctly
-            gcode_commands.append("G4 P0")
+            # G4 P<ms> provides the delay, P0 ensures sync without extra delay
+            delay_cmd = f"G4 P{MOVE_DELAY_MS}" if MOVE_DELAY_MS > 0 else "G4 P0"
+            gcode_commands.append(delay_cmd)
 
     full_script = "\n".join(gcode_commands)
     

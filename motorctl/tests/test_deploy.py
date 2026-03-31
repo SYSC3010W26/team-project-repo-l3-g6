@@ -70,7 +70,7 @@ async def test_full_solve_flow():
     assert controller.move_buffer == move_sequence
 
     # 3. Execute - Note: This sends G-Code to the hardware
-    print(f"\n[Test] Executing moves: {move_sequence}. Watch the robot!")
+    print(f"\n[Test] Executing moves: {move_sequence}.")
     await controller.handle_start_solve()
     
     # 4. Verification of state reset
