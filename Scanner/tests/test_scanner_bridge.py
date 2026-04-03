@@ -17,7 +17,7 @@ import requests
 
 # Import modules under test
 import sys
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from Scanner.scanner_bridge import ScanResult, ScannerAPIClient
 
 # ─────────────────────────────────────────────────────────────────────────────

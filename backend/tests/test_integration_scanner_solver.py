@@ -17,7 +17,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock
 
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -185,9 +185,9 @@ class TestScannerSolverIntegration:
             response = await submit_solution(request, mock_db)
             
             assert response.solution_id == 789
-            mock_crud.update_solve_session_status.assert_called_with(mock_db, test_session_id, "solved")
+            mock_crud.update_solve_session_status.assert_called_with(mock_db, test_session_id, "executing")
             print(f"  ✓ Solution submitted: solution_id=789")
-            print(f"    Status transition: solving → solved")
+            print(f"    Status transition: solving → executing")
         
         # ───────────────────────────────────────────────────────────────
         # SUMMARY

@@ -7,9 +7,9 @@ import asyncio
 import os
 import sys
 from dotenv import load_dotenv
-from healthcheck import wait_for_hardware
-from server_bridge import sio, connect_to_server, manager
-from heartbeat import run_heartbeat
+from .healthcheck import wait_for_hardware
+from .server_bridge import sio, connect_to_server, manager
+from .heartbeat import run_heartbeat
 load_dotenv()
 
 NODE_ID = os.getenv('NODE_ID', 'motor-node')

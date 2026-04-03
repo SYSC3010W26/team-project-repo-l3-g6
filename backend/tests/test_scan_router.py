@@ -13,7 +13,7 @@ from unittest.mock import Mock, patch
 
 # Import modules under test
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from backend.routers.scan import validate_state_string
 

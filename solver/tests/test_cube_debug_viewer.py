@@ -43,7 +43,7 @@ import unittest
 import random
 
 # Path setup
-PROJECT_DIR = os.path.join(os.path.dirname(__file__), "..", "project")
+PROJECT_DIR = os.path.join(os.path.dirname(__file__), "..")
 if PROJECT_DIR not in sys.path:
     sys.path.insert(0, PROJECT_DIR)
 

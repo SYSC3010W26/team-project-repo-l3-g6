@@ -7,7 +7,7 @@ import os
 import asyncio
 import socketio
 from enum import Enum
-from actuator import execute_move_sequence
+from .actuator import execute_move_sequence
 
 class MotorState(Enum):
     STARTUP = "startup"

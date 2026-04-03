@@ -3,7 +3,11 @@ import asyncio
 from unittest.mock import AsyncMock, patch
 from motorctl.src.server_bridge import MotorController, MotorState
 
-@pytest.mark.asyncio
+@pytest.fixture
+def anyio_backend():
+    return 'asyncio'
+
+@pytest.mark.anyio
 async def test_state_transitions_flow():
     # Create controller with mocked callbacks
     state_callback = AsyncMock()
@@ -21,7 +25,7 @@ async def test_state_transitions_flow():
     assert controller.state == MotorState.WAITING_FOR_START
     assert controller.move_buffer == "U R L"
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_solve_execution_cycle():
     complete_callback = AsyncMock()
     controller = MotorController("test-node", on_complete=complete_callback)
