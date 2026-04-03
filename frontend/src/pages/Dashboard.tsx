@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -54,10 +54,14 @@ export default function Dashboard() {
 
   const [liveCubeState, setLiveCubeState] = useState<string | undefined>(undefined);
   const [animatingMove, setAnimatingMove] = useState<string | undefined>(undefined);
+  const [prevSessionId, setPrevSessionId] = useState(sessionId);
+  const [prevScanState, setPrevScanState] = useState<string | undefined>(undefined);
 
   // Sync liveCubeState with scanData when it's first available or when session changes
   // OR snap to solved when session is 'done'
-  useEffect(() => {
+  if (prevSessionId !== sessionId || (scanData?.state_string && prevScanState !== scanData.state_string)) {
+    setPrevSessionId(sessionId);
+    setPrevScanState(scanData?.state_string);
     if (status === 'done') {
       setLiveCubeState(SOLVED_STATE);
       setAnimatingMove(undefined);
@@ -65,7 +69,7 @@ export default function Dashboard() {
       setLiveCubeState(scanData.state_string);
       setAnimatingMove(undefined);
     }
-  }, [scanData?.state_string, sessionId, status]);
+  }
 
   useSocketEvent('execution_progress', (data) => {
     if (String(data.session_id) === String(sessionId) && data.move) {
@@ -237,9 +241,6 @@ export default function Dashboard() {
             <DashboardLogPanel
               loading={sessionsLoading}
               latestSession={latestSession}
-              status={status}
-              nodes={nodes ?? []}
-              scanData={scanData}
             />
           </CardContent>
         </Card>

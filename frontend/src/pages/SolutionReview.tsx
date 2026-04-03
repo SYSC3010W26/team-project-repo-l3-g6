@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -24,11 +24,13 @@ export default function SolutionReview() {
   });
 
   const effectiveSessionId = sessionId || sessions?.[0]?.session_id;
+  const [prevEffectiveId, setPrevEffectiveId] = useState(effectiveSessionId);
 
   // Reset step when navigating to a new session
-  useEffect(() => {
+  if (prevEffectiveId !== effectiveSessionId) {
+    setPrevEffectiveId(effectiveSessionId);
     setCurrentStep(0);
-  }, [effectiveSessionId]);
+  }
 
   const { data: solution, isLoading: solutionLoading, isError: isSolutionError } = useQuery({
     queryKey: ['solution', effectiveSessionId],
@@ -44,7 +46,7 @@ export default function SolutionReview() {
 
   const isLoading = (sessionsLoading && !sessionId) || (solutionLoading && !!effectiveSessionId) || (scanLoading && !!effectiveSessionId);
 
-  const steps = solution?.steps ?? [];
+  const steps = useMemo(() => solution?.steps ?? [], [solution?.steps]);
 
   // Animation detection: detect single step increments/decrements
   useEffect(() => {

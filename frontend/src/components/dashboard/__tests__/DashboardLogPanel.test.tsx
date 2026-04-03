@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import DashboardLogPanel from '../DashboardLogPanel';
 import { createTestQueryClient } from '@/test/renderApp';
 import * as api from '@/lib/api';
@@ -8,11 +8,6 @@ import * as api from '@/lib/api';
 vi.mock('@/lib/api', () => ({
   getLogs: vi.fn(),
 }));
-
-const mockNodes = [
-  { node_id: '1', node_type: 'scanner', is_online: true, last_heartbeat: '2026-03-30T12:00:00Z' },
-  { node_id: '2', node_type: 'solver', is_online: true, last_heartbeat: '2026-03-30T12:00:00Z' },
-];
 
 const mockLogs = [
   {
@@ -38,7 +33,7 @@ const mockLogs = [
 ];
 
 describe('DashboardLogPanel', () => {
-  let queryClient: any;
+  let queryClient: QueryClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -51,8 +46,6 @@ describe('DashboardLogPanel', () => {
       <QueryClientProvider client={queryClient}>
         <DashboardLogPanel
           loading={true}
-          status="idle"
-          nodes={[]}
         />
       </QueryClientProvider>
     );
@@ -67,8 +60,6 @@ describe('DashboardLogPanel', () => {
       <QueryClientProvider client={queryClient}>
         <DashboardLogPanel
           loading={false}
-          status="solving"
-          nodes={mockNodes}
           latestSession={{
             session_id: 1,
             status: 'solving',
@@ -95,8 +86,6 @@ describe('DashboardLogPanel', () => {
       <QueryClientProvider client={queryClient}>
         <DashboardLogPanel
           loading={false}
-          status="idle"
-          nodes={mockNodes}
         />
       </QueryClientProvider>
     );
@@ -126,8 +115,6 @@ describe('DashboardLogPanel', () => {
       <QueryClientProvider client={queryClient}>
         <DashboardLogPanel
           loading={false}
-          status="solving"
-          nodes={mockNodes}
           latestSession={{
             session_id: 1,
             status: 'solving',
@@ -146,3 +133,4 @@ describe('DashboardLogPanel', () => {
     });
   });
 });
+

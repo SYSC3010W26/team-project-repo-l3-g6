@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Dashboard from '../Dashboard';
 import { createTestQueryClient } from '@/test/renderApp';
 import * as useSocket from '@/hooks/useSocket';
@@ -36,8 +36,8 @@ vi.mock('@/components/dashboard/DashboardLogPanel', () => ({ default: () => <div
 const SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
 describe('Dashboard Live Updates', () => {
-  let queryClient: any;
-  let executionProgressHandler: any;
+  let queryClient: QueryClient;
+  let executionProgressHandler: (data: unknown) => void;
 
   beforeEach(() => {
     vi.clearAllMocks();

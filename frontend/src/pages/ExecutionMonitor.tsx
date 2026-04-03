@@ -7,7 +7,7 @@ import ProgressHeader from '@/components/execution/ProgressHeader';
 import MoveProgressList from '@/components/execution/MoveProgressList';
 import { useSocketEvent } from '@/hooks/useSocket';
 import { getSessions, getSolution } from '@/lib/api';
-import type { ExecutionProgressUpdate } from '@/types/api';
+import type { ExecutionProgressUpdate, SolveSession, SolutionStep } from '@/types/api';
 
 export default function ExecutionMonitor() {
   const queryClient = useQueryClient();
@@ -19,7 +19,7 @@ export default function ExecutionMonitor() {
     refetchInterval: 10_000,
   });
 
-  const activeSession = sessions.find((s: any) => s.status === 'executing');
+  const activeSession = sessions.find((s: SolveSession) => s.status === 'executing');
   const sessionId = activeSession?.session_id ?? null;
 
   const { data: solution } = useQuery({
@@ -33,7 +33,7 @@ export default function ExecutionMonitor() {
     queryClient.invalidateQueries({ queryKey: ['sessions'] });
   });
 
-  const allMoves = (solution?.steps ?? []).map((s: any) => ({
+  const allMoves = (solution?.steps ?? []).map((s: SolutionStep) => ({
     index: s.step_index,
     notation: s.move_notation,
   }));

@@ -54,7 +54,7 @@ describe('ExecutionMonitor', () => {
       pct_complete: 0.5,
     };
 
-    mockUseSocketEvent.mockImplementationOnce((_event: string, handler: (data: any) => void) => {
+    mockUseSocketEvent.mockImplementationOnce((_event: string, handler: (data: ExecutionProgressUpdate) => void) => {
       handler(progress);
     });
 

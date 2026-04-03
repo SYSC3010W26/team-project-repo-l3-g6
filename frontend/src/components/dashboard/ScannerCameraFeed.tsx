@@ -19,6 +19,7 @@ export default function ScannerCameraFeed({ scannerIp = 'localhost', sessionActi
 
   // Test stream connectivity
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoading(true);
     setHasError(false);
 
@@ -52,7 +53,7 @@ export default function ScannerCameraFeed({ scannerIp = 'localhost', sessionActi
     testImage.src = `${streamUrl}?t=${Date.now()}`;
 
     return () => clearTimeout(timeoutId);
-  }, [scannerIp, retryCount]);
+  }, [scannerIp, retryCount, streamUrl]);
 
   const statusBadgeColor = isOnline ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30';
   const statusDotColor = isOnline ? 'bg-green-500' : 'bg-red-500';

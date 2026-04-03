@@ -68,6 +68,7 @@ function Cubelet({ position, stickers, index, cubeletRefs }: CubeletData & { ind
   
   // Register this cubelet's rotation group ref
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     cubeletRefs.current[index] = groupRef.current;
   }, [index, cubeletRefs]);
 
@@ -228,21 +229,27 @@ export default function CubeViewer3D({ stateString, animatingMove }: CubeViewer3
   const [displayedState, setDisplayedState] = useState(stateString ?? SOLVED_STATE);
   const [currentAnimMove, setCurrentAnimMove] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
+  const [prevProps, setPrevProps] = useState({ stateString, animatingMove });
+
+  // Sync state with props during render to avoid cascading renders
+  if (stateString !== prevProps.stateString || animatingMove !== prevProps.animatingMove) {
+    setPrevProps({ stateString, animatingMove });
     const target = stateString ?? SOLVED_STATE;
     if (target !== displayedState) {
       if (animatingMove) {
-        // Only start animation if it's not already running the same move
         if (currentAnimMove !== animatingMove) {
           setCurrentAnimMove(animatingMove);
         }
       } else {
-        // Snap directly if no move provided
         setDisplayedState(target);
         setCurrentAnimMove(undefined);
       }
     }
-  }, [stateString, animatingMove, displayedState, currentAnimMove]);
+  }
+
+  useEffect(() => {
+    // This effect is now just for potential side-effects or logging
+  }, [stateString, animatingMove]);
 
   const handleAnimationComplete = () => {
     setDisplayedState(stateString ?? SOLVED_STATE);

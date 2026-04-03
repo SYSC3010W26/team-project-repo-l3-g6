@@ -1,15 +1,12 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { NodeStatus, PipelineStatus, SolveSession, CubeState, SystemLog } from '@/types/api';
+import type { SolveSession, SystemLog } from '@/types/api';
 import { useQuery } from '@tanstack/react-query';
 import { getLogs } from '@/lib/api';
 
 interface DashboardLogPanelProps {
   loading: boolean;
   latestSession?: SolveSession;
-  status: PipelineStatus;
-  nodes: NodeStatus[];
-  scanData?: CubeState;
 }
 
 function formatSessionTimestamp(value: string | null | undefined): string {
@@ -22,9 +19,6 @@ function formatSessionTimestamp(value: string | null | undefined): string {
 export default function DashboardLogPanel({
   loading,
   latestSession,
-  status: _status,
-  nodes: _nodes,
-  scanData: _scanData,
 }: DashboardLogPanelProps) {
   const { data: logs, isLoading: logsLoading } = useQuery<SystemLog[]>({
     queryKey: ['logs'],

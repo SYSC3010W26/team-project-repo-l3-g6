@@ -40,7 +40,7 @@ function controlButtonClass({
   return 'border-kl-outline-variant bg-kl-surface-low/50 text-kl-on-surface hover:bg-kl-surface-high';
 }
 
-export default function ControlButtons({ status, sessionId: _sessionId, onAction, loading }: Props) {
+export default function ControlButtons({ status, onAction, loading }: Props) {
   const isIdle = status === 'idle';
   const isActive = ['scanning', 'solving', 'executing'].includes(status);
   const isDone = ['done', 'error'].includes(status);
