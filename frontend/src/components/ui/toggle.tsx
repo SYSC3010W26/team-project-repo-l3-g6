@@ -1,3 +1,8 @@
+/**
+ * @file toggle.tsx
+ * @description UI component: toggle
+ */
+
 "use client";
 
 import * as React from "react";

@@ -1,5 +1,6 @@
 /**
- * Rubik's Cube state transition logic.
+ * @file cube.ts
+ * @description Rubik's Cube state transition logic using WCA move notation.
  * State string format: 54 characters, WCA order: U R F D L B.
  * Each face is a 3x3 grid (9 stickers), indexed 0-8.
  */

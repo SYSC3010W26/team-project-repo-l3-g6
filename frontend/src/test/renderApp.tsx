@@ -1,3 +1,8 @@
+/**
+ * @file renderApp.tsx
+ * @description Test utility: renderApp
+ */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, type RenderOptions } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';

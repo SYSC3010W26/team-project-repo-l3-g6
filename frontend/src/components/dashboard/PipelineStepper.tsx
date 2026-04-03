@@ -1,3 +1,8 @@
+/**
+ * @file PipelineStepper.tsx
+ * @description Dashboard component: PipelineStepper
+ */
+
 import { cn } from '@/lib/utils';
 import type { PipelineStatus } from '@/types/api';
 

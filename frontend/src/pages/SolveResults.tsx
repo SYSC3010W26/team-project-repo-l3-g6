@@ -1,3 +1,8 @@
+/**
+ * @file SolveResults.tsx
+ * @description Page component: SolveResults
+ */
+
 import { useQuery } from '@tanstack/react-query';
 import { Skeleton } from '@/components/ui/skeleton';
 import SuccessCard from '@/components/results/SuccessCard';

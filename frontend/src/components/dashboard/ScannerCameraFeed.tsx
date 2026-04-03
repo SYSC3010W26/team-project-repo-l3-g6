@@ -1,3 +1,8 @@
+/**
+ * @file ScannerCameraFeed.tsx
+ * @description Dashboard component: ScannerCameraFeed
+ */
+
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

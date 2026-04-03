@@ -1,3 +1,8 @@
+/**
+ * @file toggle-variants.ts
+ * @description UI component: toggle variants
+ */
+
 import { cva } from 'class-variance-authority';
 
 export const toggleVariants = cva(

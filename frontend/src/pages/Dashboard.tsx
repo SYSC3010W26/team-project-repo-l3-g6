@@ -1,3 +1,8 @@
+/**
+ * @file Dashboard.tsx
+ * @description Page component: Dashboard
+ */
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';

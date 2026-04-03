@@ -1,3 +1,8 @@
+/**
+ * @file App.tsx
+ * @description Root application component that defines routes and provides the main application shell.
+ */
+
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import AppShell from '@/components/layout/AppShell';
 import Dashboard from '@/pages/Dashboard';

@@ -1,3 +1,8 @@
+/**
+ * @file ErrorBanner.tsx
+ * @description Layout component: ErrorBanner
+ */
+
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getLogs } from '@/lib/api';

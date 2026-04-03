@@ -1,3 +1,8 @@
+/**
+ * @file table.tsx
+ * @description UI component: table
+ */
+
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 

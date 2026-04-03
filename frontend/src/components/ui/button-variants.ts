@@ -1,3 +1,8 @@
+/**
+ * @file button-variants.ts
+ * @description UI component: button variants
+ */
+
 import { cva } from 'class-variance-authority';
 
 export const buttonVariants = cva(

@@ -1,3 +1,8 @@
+/**
+ * @file main.tsx
+ * @description Main entry point for the React application, initializing the root and QueryClient.
+ */
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

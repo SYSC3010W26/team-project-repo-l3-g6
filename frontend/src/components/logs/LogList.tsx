@@ -1,3 +1,8 @@
+/**
+ * @file LogList.tsx
+ * @description Logs component: LogList
+ */
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { SystemLog } from '@/types/api';

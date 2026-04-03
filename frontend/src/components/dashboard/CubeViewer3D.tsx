@@ -1,3 +1,8 @@
+/**
+ * @file CubeViewer3D.tsx
+ * @description Dashboard component: CubeViewer3D
+ */
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';

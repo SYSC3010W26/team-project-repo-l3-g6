@@ -1,3 +1,8 @@
+/**
+ * @file DashboardLogPanel.tsx
+ * @description Dashboard component: DashboardLogPanel
+ */
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { SolveSession, SystemLog } from '@/types/api';

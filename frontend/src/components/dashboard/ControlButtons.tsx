@@ -1,3 +1,8 @@
+/**
+ * @file ControlButtons.tsx
+ * @description Dashboard component: ControlButtons
+ */
+
 import {
   AlertDialog,
   AlertDialogAction,

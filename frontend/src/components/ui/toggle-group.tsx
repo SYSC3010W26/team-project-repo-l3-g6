@@ -1,3 +1,8 @@
+/**
+ * @file toggle-group.tsx
+ * @description UI component: toggle group
+ */
+
 "use client"
 
 import * as React from "react"

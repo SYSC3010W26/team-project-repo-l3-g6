@@ -1,3 +1,8 @@
+/**
+ * @file SystemLogs.tsx
+ * @description Page component: SystemLogs
+ */
+
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import SeverityFilter from '@/components/logs/SeverityFilter';

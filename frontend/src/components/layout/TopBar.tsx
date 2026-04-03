@@ -1,3 +1,8 @@
+/**
+ * @file TopBar.tsx
+ * @description Layout component: TopBar
+ */
+
 import { useSocketStatus } from '@/hooks/useSocket';
 import { cn } from '@/lib/utils';
 

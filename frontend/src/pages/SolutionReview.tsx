@@ -1,3 +1,8 @@
+/**
+ * @file SolutionReview.tsx
+ * @description Page component: SolutionReview
+ */
+
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';

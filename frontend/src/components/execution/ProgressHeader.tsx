@@ -1,3 +1,8 @@
+/**
+ * @file ProgressHeader.tsx
+ * @description Execution component: ProgressHeader
+ */
+
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import type { ExecutionProgressUpdate } from '@/types/api';

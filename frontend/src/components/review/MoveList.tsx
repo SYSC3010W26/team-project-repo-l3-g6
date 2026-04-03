@@ -1,3 +1,8 @@
+/**
+ * @file MoveList.tsx
+ * @description Review component: MoveList
+ */
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { SolutionStep } from '@/types/api';

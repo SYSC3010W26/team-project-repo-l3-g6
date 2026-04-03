@@ -1,3 +1,8 @@
+/**
+ * @file SuccessCard.tsx
+ * @description Results component: SuccessCard
+ */
+
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import type { SolveSession } from '@/types/api';

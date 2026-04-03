@@ -1,3 +1,8 @@
+/**
+ * @file SystemLogs.test.tsx
+ * @description Test for Page component: SystemLogs
+ */
+
 import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

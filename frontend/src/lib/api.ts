@@ -1,3 +1,8 @@
+/**
+ * @file api.ts
+ * @description Axios-based API client and service functions for backend communication.
+ */
+
 import axios from 'axios';
 import type {
   JobState,

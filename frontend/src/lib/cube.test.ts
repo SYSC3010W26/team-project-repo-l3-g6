@@ -1,3 +1,8 @@
+/**
+ * @file cube.test.ts
+ * @description Unit tests for Rubik's Cube state transition logic.
+ */
+
 import { describe, it, expect } from 'vitest';
 import { applyMove, SOLVED_STATE } from './cube';
 

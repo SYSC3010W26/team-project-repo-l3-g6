@@ -1,3 +1,8 @@
+/**
+ * @file MoveProgressList.tsx
+ * @description Execution component: MoveProgressList
+ */
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 

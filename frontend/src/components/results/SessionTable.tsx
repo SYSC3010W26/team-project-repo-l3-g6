@@ -1,3 +1,8 @@
+/**
+ * @file SessionTable.tsx
+ * @description Results component: SessionTable
+ */
+
 import { useNavigate } from 'react-router-dom';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,

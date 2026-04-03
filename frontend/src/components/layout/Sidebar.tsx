@@ -1,3 +1,8 @@
+/**
+ * @file Sidebar.tsx
+ * @description Layout component: Sidebar
+ */
+
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

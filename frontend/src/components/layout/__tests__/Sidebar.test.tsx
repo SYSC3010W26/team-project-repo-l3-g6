@@ -1,3 +1,8 @@
+/**
+ * @file Sidebar.test.tsx
+ * @description Test for Layout component: Sidebar
+ */
+
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

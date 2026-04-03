@@ -1,3 +1,8 @@
+/**
+ * @file api.ts
+ * @description Type or Hook: api
+ */
+
 export type PipelineStatus = 'idle' | 'scanning' | 'solving' | 'executing' | 'done' | 'error';
 
 export interface JobState {

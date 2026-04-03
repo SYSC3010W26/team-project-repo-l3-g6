@@ -1,3 +1,8 @@
+/**
+ * @file StepNavigator.tsx
+ * @description Review component: StepNavigator
+ */
+
 import { Button } from '@/components/ui/button';
 import { useEffect, useRef, useState } from 'react';
 

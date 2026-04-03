@@ -1,3 +1,8 @@
+/**
+ * @file useSocket.ts
+ * @description Type or Hook: useSocket
+ */
+
 import { useState, useEffect } from 'react';
 import socket from '@/lib/socket';
 import type { ServerToClientEvents } from '@/lib/socket';
