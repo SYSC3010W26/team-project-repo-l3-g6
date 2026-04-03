@@ -22,8 +22,8 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from server_bridge import MotorController, MotorState
-from healthcheck import check_klipper_ready
+from motorctl.src.server_bridge import MotorController, MotorState
+from motorctl.src.healthcheck import check_klipper_ready
 
 @pytest.mark.asyncio
 async def test_hardware_connection():
