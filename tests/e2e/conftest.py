@@ -157,20 +157,13 @@ def seeded_session_id(live_backend):
     # No cleanup needed; the session will exist in the live DB for the test duration
 
 
-@pytest.fixture(scope="session")
-def live_frontend(live_backend):
+def _run_frontend(live_backend_pid=None):
     """
-    Session-scoped fixture: Build and run vite preview on port 5173.
-    
-    - Runs: npm run build (in frontend/)
-    - Runs: npm run preview (which runs vite preview --port 5173)
-    - Waits up to 30s for port 5173 to respond
-    - Yields the base URL: http://localhost:5173
-    - On teardown: terminate the vite process
+    Core logic: Build and run vite preview on port 5173.
     """
     frontend_dir = str(Path(__file__).parent.parent.parent / "frontend")
     
-    print("[live_frontend] Running npm run build...")
+    print("[frontend] Running npm run build...")
     result = subprocess.run(
         ["npm", "run", "build"],
         cwd=frontend_dir,
@@ -179,12 +172,12 @@ def live_frontend(live_backend):
         timeout=120,
     )
     if result.returncode != 0:
-        print(f"[live_frontend] Build failed:\n{result.stderr}")
+        print(f"[frontend] Build failed:\n{result.stderr}")
         raise RuntimeError(f"npm run build failed: {result.stderr}")
-    print("[live_frontend] Build completed successfully")
+    print("[frontend] Build completed successfully")
     
     # Launch vite preview
-    print("[live_frontend] Running npm run preview...")
+    print("[frontend] Running npm run preview...")
     proc = subprocess.Popen(
         ["npm", "run", "preview"],
         cwd=frontend_dir,
@@ -200,7 +193,7 @@ def live_frontend(live_backend):
         try:
             resp = requests.get("http://localhost:5173/", timeout=2)
             ready = True
-            print(f"[live_frontend] Frontend is ready (took {time.time() - start_time:.1f}s)")
+            print(f"[frontend] Frontend is ready (took {time.time() - start_time:.1f}s)")
             break
         except requests.ConnectionError:
             pass
@@ -214,7 +207,17 @@ def live_frontend(live_backend):
             proc.kill()
         raise RuntimeError("Frontend failed to start within 30s")
     
-    yield "http://localhost:5173"
+    return proc, "http://localhost:5173"
+
+
+@pytest.fixture(scope="session")
+def live_frontend(live_backend):
+    """
+    Session-scoped fixture: Build and run vite preview on port 5173.
+    Depends on live_backend.
+    """
+    proc, url = _run_frontend(live_backend)
+    yield url
     
     # Teardown: terminate vite preview
     print("[live_frontend] Tearing down vite preview")
@@ -223,6 +226,26 @@ def live_frontend(live_backend):
         proc.wait(timeout=5)
     except subprocess.TimeoutExpired:
         print("[live_frontend] Terminate timeout, killing process")
+        proc.kill()
+        proc.wait()
+
+
+@pytest.fixture(scope="session")
+def mocked_frontend():
+    """
+    Session-scoped fixture: Build and run vite preview on port 5173.
+    Does NOT depend on live_backend.
+    """
+    proc, url = _run_frontend()
+    yield url
+    
+    # Teardown: terminate vite preview
+    print("[mocked_frontend] Tearing down vite preview")
+    proc.terminate()
+    try:
+        proc.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        print("[mocked_frontend] Terminate timeout, killing process")
         proc.kill()
         proc.wait()
 

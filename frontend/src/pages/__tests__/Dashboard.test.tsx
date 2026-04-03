@@ -42,7 +42,8 @@ const SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
 describe('Dashboard Live Updates', () => {
   let queryClient: QueryClient;
-  let executionProgressHandler: (data: unknown) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let executionProgressHandler: any;
 
   beforeEach(() => {
     vi.clearAllMocks();

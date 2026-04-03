@@ -3,8 +3,6 @@ import re
 import os
 from playwright.sync_api import Page, expect
 
-# Use environment variable for BASE_URL, default to localhost:5173
-BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:5173")
 ARTIFACTS_DIR = "tests/e2e/artifacts"
 
 @pytest.fixture(scope="session", autouse=True)
@@ -66,7 +64,7 @@ def setup_api_mocks(page: Page):
         }
     ))
 
-def test_navigation_and_screenshots(page: Page):
+def test_navigation_and_screenshots(page: Page, mocked_frontend):
     """
     Core E2E test that verifies UI navigation via Sidebar links
     and ensures key components are rendered on each page.
@@ -75,7 +73,7 @@ def test_navigation_and_screenshots(page: Page):
     page.set_viewport_size({"width": 1280, "height": 800})
     
     # --- 1. Dashboard (Live Session) ---
-    page.goto(BASE_URL)
+    page.goto(mocked_frontend)
     # Verify we are on the dashboard
     expect(page.get_by_text("Live Session", exact=True)).to_be_visible()
     # Verify mocked node status is visible (e.g., NodeHealthCard)
@@ -110,7 +108,7 @@ def test_navigation_and_screenshots(page: Page):
     expect(page.get_by_text("Frontend E2E Navigation Test Started")).to_be_visible()
     page.screenshot(path=f"{ARTIFACTS_DIR}/e2e_05_logs.png")
 
-def test_api_contract_verification(page: Page):
+def test_api_contract_verification(page: Page, mocked_frontend):
     """
     Verifies that clicking 'NEW SOLVE' triggers the expected API call.
     """
@@ -120,14 +118,14 @@ def test_api_contract_verification(page: Page):
         
     page.route(re.compile(r".*/api/jobs/start"), handle_post_solve)
     
-    page.goto(BASE_URL)
+    page.goto(mocked_frontend)
     # Click NEW SOLVE button
     page.get_by_role("button", name="NEW SOLVE").click()
     
     # Navigation should happen to Dashboard (/) after success (as per Sidebar.tsx logic)
-    expect(page).to_have_url(BASE_URL + "/")
+    expect(page).to_have_url(mocked_frontend + "/")
 
-def test_full_lifecycle(page: Page):
+def test_full_lifecycle(page: Page, mocked_frontend):
     """
     Simulates a full session lifecycle:
     1. Click 'NEW SOLVE' to start.
@@ -161,7 +159,7 @@ def test_full_lifecycle(page: Page):
     page.route(re.compile(fr".*/api/jobs/{session_id}$"), handle_get_job)
 
     # 3. Execution
-    page.goto(BASE_URL)
+    page.goto(mocked_frontend)
     
     # Click NEW SOLVE
     page.get_by_role("button", name="NEW SOLVE").click()
