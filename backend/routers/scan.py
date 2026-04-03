@@ -80,10 +80,11 @@ def submit_scan(body: schemas.ScanSubmitRequest, conn: sqlite3.Connection = Depe
         raise HTTPException(status_code=400, detail=error_msg)
     
     # Log successful validation
+    conf_str = f"{body.confidence:.1%}" if body.confidence is not None else "N/A"
     logger.info(
         f"Scan submit validated for session {body.session_id}: "
         f"state_string={body.state_string[:20]}..., "
-        f"is_valid={body.is_valid}, confidence={body.confidence:.1%}"
+        f"is_valid={body.is_valid}, confidence={conf_str}"
     )
     
     # Create cube state record

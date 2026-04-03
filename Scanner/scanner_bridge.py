@@ -199,7 +199,7 @@ class ScannerAPIClient:
                     # Bad request — don't retry, issue is with scan data
                     try:
                         detail = e.response.json().get("detail", "Unknown")
-                    except:
+                    except Exception:
                         detail = str(e.response.text)
                     logger.error(
                         f"✗ Bad request (400): {detail}. "

@@ -52,7 +52,7 @@ def start_ghost_heartbeats():
                     },
                     timeout=2,
                 )
-            except:
+            except Exception:
                 pass
             time.sleep(2)
 
@@ -83,7 +83,7 @@ def wait_for_server(timeout=30):
             if r.status_code == 200:
                 print("✅ Server is ready!")
                 return True
-        except:
+        except Exception:
             pass
         time.sleep(1)
     return False

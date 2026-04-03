@@ -29,6 +29,7 @@ DB_PATH = os.getenv("DATABASE_URL", "./rubiks.db")
 
 _db_lock = threading.Lock()
 _shared_conn: sqlite3.Connection | None = None
+_shared_conn_path: str | None = None
 
 
 def _open_connection() -> sqlite3.Connection:
@@ -41,10 +42,19 @@ def _open_connection() -> sqlite3.Connection:
 
 def get_db() -> sqlite3.Connection:
     """Return the shared SQLite connection (creates it on first call)."""
-    global _shared_conn
+    global _shared_conn, _shared_conn_path
     with _db_lock:
+        if _shared_conn is not None:
+            try:
+                _shared_conn.execute("SELECT 1")
+                if _shared_conn_path != DB_PATH:
+                    _shared_conn.close()
+                    _shared_conn = None
+            except sqlite3.ProgrammingError:
+                _shared_conn = None
         if _shared_conn is None:
             _shared_conn = _open_connection()
+            _shared_conn_path = DB_PATH
     return _shared_conn
 
 

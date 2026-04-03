@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 SYSC3010 L3-G6 — Solver Pi Polling Listener
-Author: Antigravity (Agent)
 
 Polls the backend API for solve sessions in the 'solving' state,
 computes the solution using the local Solver class, and POSTs
@@ -168,6 +167,7 @@ class SolverListener:
             # Submit
             self.submit_solution(session_id, algorithm, solution)
             print(f"🏁 Solution submitted to backend.")
+        except CubeNotSolvableError as e:
             logger.error(f"Cube not solvable for session {session_id}: {e}")
             # Optional: Transition session to 'error' status
             self.report_error(session_id, str(e))

@@ -36,7 +36,7 @@ def test_full_pipeline_happy_path(client):
     # Step 3: Submit a cube scan
     r = client.post(
         "/scan/submit",
-        json={"session_id": session_id, "state_string": "U" * 54, "is_valid": True},
+        json={"session_id": session_id, "state_string": "W" * 54, "is_valid": True},
     )
     assert r.status_code == 200
     cube_state_id = r.json()["cube_state_id"]
@@ -45,7 +45,7 @@ def test_full_pipeline_happy_path(client):
     # Step 4: Read back the scan result
     r = client.get(f"/scan/{session_id}")
     assert r.status_code == 200
-    assert r.json()["state_string"] == "U" * 54
+    assert r.json()["state_string"] == "W" * 54
 
     # Step 5: Submit a solution
     r = client.post(
@@ -98,7 +98,7 @@ def test_full_pipeline_happy_path(client):
     # Step 10: Session should now be in completed state
     r = client.get(f"/jobs/{session_id}")
     assert r.status_code == 200
-    assert r.json()["status"] == "completed"
+    assert r.json()["status"] == "done"
 
 
 def test_job_not_found(client):
@@ -175,7 +175,7 @@ def test_execution_progress_broadcast(client):
     session_id = client.post("/jobs/start", json={}).json()["session_id"]
     client.post(
         "/scan/submit",
-        json={"session_id": session_id, "state_string": "U" * 54, "is_valid": True},
+        json={"session_id": session_id, "state_string": "W" * 54, "is_valid": True},
     )
     solution_id = client.post(
         "/solve/submit",
