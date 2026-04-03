@@ -41,22 +41,20 @@ import sys
 import os
 import unittest
 import random
+import io
+from contextlib import redirect_stdout
 
 # Path setup
 PROJECT_DIR = os.path.join(os.path.dirname(__file__), "..")
 if PROJECT_DIR not in sys.path:
     sys.path.insert(0, PROJECT_DIR)
 
-from Cube_State import Cube
-from Algorithm_Selector import AlgorithmSelector
-import Permutation_Table as PT
-
-import io
-from contextlib import redirect_stdout
+from Cube_State import Cube  # noqa: E402
+import Permutation_Table as PT  # noqa: E402
 
 # Redirect stdout for the whole import so ANSI sequences don't pollute output
 with redirect_stdout(io.StringIO()):
-    from Cube_Debug_Viewer import CubeDebugger
+    from Cube_Debug_Viewer import CubeDebugger  # noqa: E402
 
 VALID_MOVES = [
     "R", "R'", "R2",

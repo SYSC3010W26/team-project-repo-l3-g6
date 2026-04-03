@@ -3,7 +3,6 @@
 # Eric McFetridge # 101310942
 ############################################
 
-import asyncio
 import os
 import httpx
 import logging

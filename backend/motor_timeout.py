@@ -11,7 +11,7 @@ Started via asyncio.create_task in main.py startup event.
 ============================================================
 """
 import asyncio
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from database.db import db_session
 from database import crud

@@ -10,9 +10,8 @@ SYSC3010 L3-G6
 import pytest
 import json
 import tempfile
-import os
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import requests
 
 # Import modules under test

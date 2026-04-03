@@ -14,9 +14,7 @@ How to run:
 """
 
 import pytest
-import asyncio
 import sys
-import os
 from pathlib import Path
 
 # Add src to path

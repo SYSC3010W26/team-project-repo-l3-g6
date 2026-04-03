@@ -60,13 +60,13 @@ class TestScannerSolverIntegration:
         5. Submit solution (external)
         """
         
-        print(f"\n[INTEGRATION TEST] Scanner → API → Solver Pipeline")
+        print("\n[INTEGRATION TEST] Scanner → API → Solver Pipeline")
         print(f"{'='*60}")
         
         # ───────────────────────────────────────────────────────────────
         # STEP 1: Create session
         # ───────────────────────────────────────────────────────────────
-        print(f"\nSTEP 1: Create session (POST /jobs/start)")
+        print("\nSTEP 1: Create session (POST /jobs/start)")
         
         from backend.routers.jobs import start_job
         from backend.schemas import JobStartRequest
@@ -85,7 +85,7 @@ class TestScannerSolverIntegration:
         # ───────────────────────────────────────────────────────────────
         # STEP 2: Submit scan
         # ───────────────────────────────────────────────────────────────
-        print(f"\nSTEP 2: Submit scan (POST /scan/submit)")
+        print("\nSTEP 2: Submit scan (POST /scan/submit)")
         
         from backend.routers.scan import submit_scan
         from backend.schemas import ScanSubmitRequest
@@ -109,12 +109,12 @@ class TestScannerSolverIntegration:
             assert response.cube_state_id == 456
             print(f"  ✓ Scan submitted: cube_state_id={response.cube_state_id}")
             print(f"    State: {valid_state_string[:20]}...")
-            print(f"    Confidence: 99%")
+            print("    Confidence: 99%")
         
         # ───────────────────────────────────────────────────────────────
         # STEP 3: Verify cube state in DB
         # ───────────────────────────────────────────────────────────────
-        print(f"\nSTEP 3: Verify cube_states table (GET /scan/session_id)")
+        print("\nSTEP 3: Verify cube_states table (GET /scan/session_id)")
         
         from backend.routers.scan import get_scan
         
@@ -136,20 +136,20 @@ class TestScannerSolverIntegration:
             assert response.state_string == valid_state_string
             assert response.is_valid is True
             assert response.confidence == 0.99
-            print(f"  ✓ Cube state verified in DB")
+            print("  ✓ Cube state verified in DB")
             print(f"    State: {response.state_string[:20]}...")
             print(f"    Valid: {response.is_valid}, Confidence: {response.confidence:.1%}")
         
         # ───────────────────────────────────────────────────────────────
         # STEP 4: Start solving (Acknowledge)
         # ───────────────────────────────────────────────────────────────
-        print(f"\nSTEP 4: Acknowledge solve request (POST /solve/start)")
+        print("\nSTEP 4: Acknowledge solve request (POST /solve/start)")
         
         from backend.routers.solve import start_solve
         from backend.schemas import SolveStartRequest
         
         with patch("backend.routers.solve.crud") as mock_crud, \
-             patch("backend.routers.solve.sio", new_callable=AsyncMock) as mock_sio:
+             patch("backend.routers.solve.sio", new_callable=AsyncMock):
             mock_crud.get_solve_session_by_id.return_value = {"id": test_session_id}
             mock_crud.get_cube_states_by_session.return_value = [
                 {"session_id": test_session_id, "state_string": valid_state_string, "is_valid": True}
@@ -166,13 +166,13 @@ class TestScannerSolverIntegration:
         # ───────────────────────────────────────────────────────────────
         # STEP 5: Submit solution (from external solver)
         # ───────────────────────────────────────────────────────────────
-        print(f"\nSTEP 5: Submit solution (POST /solve/submit)")
+        print("\nSTEP 5: Submit solution (POST /solve/submit)")
         
         from backend.routers.solve import submit_solution
         from backend.schemas import SolveSubmitRequest
         
         with patch("backend.routers.solve.crud") as mock_crud, \
-             patch("backend.routers.solve.sio", new_callable=AsyncMock) as mock_sio:
+             patch("backend.routers.solve.sio", new_callable=AsyncMock):
             mock_crud.get_solve_session_by_id.return_value = {"id": test_session_id}
             mock_crud.create_solution.return_value = 789
             
@@ -186,38 +186,38 @@ class TestScannerSolverIntegration:
             
             assert response.solution_id == 789
             mock_crud.update_solve_session_status.assert_called_with(mock_db, test_session_id, "executing")
-            print(f"  ✓ Solution submitted: solution_id=789")
-            print(f"    Status transition: solving → executing")
+            print("  ✓ Solution submitted: solution_id=789")
+            print("    Status transition: solving → executing")
         
         # ───────────────────────────────────────────────────────────────
         # SUMMARY
         # ───────────────────────────────────────────────────────────────
         print(f"\n{'='*60}")
-        print(f"INTEGRATION TEST PASSED")
+        print("INTEGRATION TEST PASSED")
         print(f"{'='*60}")
-        print(f"✓ Full pipeline validated:")
+        print("✓ Full pipeline validated:")
         print(f"  1. Session created (session_id={test_session_id})")
-        print(f"  2. Scan submitted (cube_state_id=456)")
-        print(f"  3. Cube state verified in DB")
-        print(f"  4. Solve request acknowledged")
-        print(f"  5. Solution submission flow verified")
+        print("  2. Scan submitted (cube_state_id=456)")
+        print("  3. Cube state verified in DB")
+        print("  4. Solve request acknowledged")
+        print("  5. Solution submission flow verified")
 
     def test_scanner_bridge_provisioning(self):
         """Test scanner_bridge session ID provisioning."""
         
-        print(f"\n[TEST] Scanner bridge session ID provisioning")
+        print("\n[TEST] Scanner bridge session ID provisioning")
         
         from Scanner.scanner_bridge import ScannerAPIClient
         from unittest.mock import Mock, patch
         
         # Scenario 1: Manual env var
-        print(f"  Scenario 1: Manual env var")
+        print("  Scenario 1: Manual env var")
         client = ScannerAPIClient("http://localhost:8000", 123)
         assert client.session_id == 123
-        print(f"    ✓ Session ID set: 123")
+        print("    ✓ Session ID set: 123")
         
         # Scenario 2: Auto-discovery would work if endpoint available
-        print(f"  Scenario 2: Auto-discovery (mocked)")
+        print("  Scenario 2: Auto-discovery (mocked)")
         with patch("requests.get") as mock_get:
             mock_response = Mock()
             mock_response.json.return_value = {"session_id": 456}
@@ -229,7 +229,7 @@ class TestScannerSolverIntegration:
             data = resp.json()
             
             assert data["session_id"] == 456
-            print(f"    ✓ Auto-discovery endpoint would return: 456")
+            print("    ✓ Auto-discovery endpoint would return: 456")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TEST: Error Handling
@@ -241,7 +241,7 @@ class TestIntegrationErrorHandling:
     def test_invalid_scan_rejected(self):
         """Scan with '?' should be rejected at /scan/submit."""
         
-        print(f"\n[TEST] Invalid scan rejected before solver")
+        print("\n[TEST] Invalid scan rejected before solver")
         
         invalid_state = "W"*6 + "???" + "R"*9 + "G"*9 + "Y"*9 + "O"*9 + "B"*9
         
@@ -254,7 +254,7 @@ class TestIntegrationErrorHandling:
         assert not is_valid
         assert "unrecognized colour" in error
         
-        print(f"  ✓ Validation rejects unknowns")
+        print("  ✓ Validation rejects unknowns")
         print(f"    Error: {error}")
         
         # Endpoint rejects the request
@@ -272,7 +272,7 @@ class TestIntegrationErrorHandling:
                 submit_scan(request, Mock())
             
             assert exc.value.status_code == 400
-            print(f"  ✓ Endpoint returns 400 error")
+            print("  ✓ Endpoint returns 400 error")
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "-s"])

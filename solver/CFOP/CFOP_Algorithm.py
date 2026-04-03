@@ -10,7 +10,6 @@ import copy
 import os
 
 from Cube_Algorithm import CubeAlgorithm
-from Cube_State import Cube
 from CFOP import CFOP_Tables
 
 

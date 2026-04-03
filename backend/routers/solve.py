@@ -128,7 +128,7 @@ async def submit_solution(body: schemas.SolveSubmitRequest, conn: sqlite3.Connec
 
     # Auto-trigger motor execution: transition to executing, emit to Motor Pi
     crud.update_solve_session_status(conn, body.session_id, "executing")
-    run_id = create_execution_run(conn, ExecutionRunCreate(
+    create_execution_run(conn, ExecutionRunCreate(
         session_id=body.session_id,
         solution_id=solution_id,
         status="executing",

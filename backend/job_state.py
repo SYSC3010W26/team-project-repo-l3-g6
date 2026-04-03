@@ -10,7 +10,6 @@ Satisfies TEST-02: testable by passing a mock sqlite3.Connection.
 ============================================================
 """
 import sqlite3
-from typing import Optional
 
 from database import crud
 

@@ -26,8 +26,6 @@ import numpy as np
 import json
 import time
 import argparse
-import os
-import sys
 from picamera2 import Picamera2
 
 
@@ -133,7 +131,7 @@ def run_roi_calibration(node_id: str, picam):
     global _clicked
     calibration = {}
 
-    print(f"\n=== ROI CALIBRATION ===")
+    print("\n=== ROI CALIBRATION ===")
     print("For each face, rotate the cube to that position, then click the")
     print("4 corners of the face IN ORDER:")
     print("  1) Top-left  2) Top-right  3) Bottom-right  4) Bottom-left")
@@ -151,7 +149,6 @@ def run_roi_calibration(node_id: str, picam):
         while True:
             frame     = picam.capture_array()
             frame_bgr = frame  # already RGB, skip the BGR conversion
-            frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             display   = frame_bgr.copy()
 
             # Draw clicked points

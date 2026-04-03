@@ -166,7 +166,7 @@ class SolverListener:
             
             # Submit
             self.submit_solution(session_id, algorithm, solution)
-            print(f"🏁 Solution submitted to backend.")
+            print("🏁 Solution submitted to backend.")
         except CubeNotSolvableError as e:
             logger.error(f"Cube not solvable for session {session_id}: {e}")
             # Optional: Transition session to 'error' status

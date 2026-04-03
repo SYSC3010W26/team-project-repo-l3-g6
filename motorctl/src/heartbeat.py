@@ -5,7 +5,6 @@
 
 import os
 import asyncio
-from dotenv import load_dotenv
 
 NODE_ID = os.getenv("NODE_ID", "motor-node")
 INTERVAL = 5

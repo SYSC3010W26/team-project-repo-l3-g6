@@ -182,10 +182,14 @@ def _eo(state):
     val = 0
     for a, b in EDGES[:11]:
         sa, sb = state[a], state[b]
-        if   sa in ("U", "D"):  flip = 0
-        elif sb in ("U", "D"):  flip = 1
-        elif sa in ("F", "B"):  flip = 0
-        else:                    flip = 1
+        if sa in ("U", "D"):
+            flip = 0
+        elif sb in ("U", "D"):
+            flip = 1
+        elif sa in ("F", "B"):
+            flip = 0
+        else:
+            flip = 1
         val = (val << 1) | flip
     return val
 
@@ -200,9 +204,12 @@ def _co(state):
     val = 0
     for u, c1, _ in CORNERS[:7]:
         su = state[u]
-        if   su in ("U", "D"):        twist = 0
-        elif state[c1] in ("U", "D"): twist = 1
-        else:                          twist = 2
+        if su in ("U", "D"):
+            twist = 0
+        elif state[c1] in ("U", "D"):
+            twist = 1
+        else:
+            twist = 2
         val = val * 3 + twist
     return val
 
@@ -235,8 +242,10 @@ def _ep8(state):
     perm = []
     for a, b in EDGES[:8]:
         cs = frozenset([state[a], state[b]])
-        try:    perm.append(ref.index(cs))
-        except ValueError: perm.append(len(perm))  # out-of-place slice edge
+        try:
+            perm.append(ref.index(cs))
+        except ValueError:
+            perm.append(len(perm))  # out-of-place slice edge
     return _lehmer(perm, 8)
 
 
@@ -246,8 +255,10 @@ def _sp(state):
     perm = []
     for a, b in EDGES[8:]:
         cs = frozenset([state[a], state[b]])
-        try:    perm.append(ref.index(cs))
-        except ValueError: perm.append(len(perm))
+        try:
+            perm.append(ref.index(cs))
+        except ValueError:
+            perm.append(len(perm))
     return _lehmer(perm, 4)
 
 
@@ -306,8 +317,10 @@ def _build_pruning_table(mt_a, n_a, mt_b, n_b, move_list, goal_a, goal_b, max_de
         for mi in range(len(move_list)):
             na = mt_a[a][mi]
             nb = mt_b[b][mi]
-            if na < 0: na = a
-            if nb < 0: nb = b
+            if na < 0:
+                na = a
+            if nb < 0:
+                nb = b
             idx = na * n_b + nb
             if table[idx] == 255:
                 table[idx] = d + 1
@@ -429,9 +442,12 @@ class Kociemba_Algorithm(CubeAlgorithm):
             neo = self._mt_eo[eo][mi]
             nco = self._mt_co[co][mi]
             nud = self._mt_ud[ud][mi]
-            if neo < 0: neo = eo
-            if nco < 0: nco = co
-            if nud < 0: nud = ud
+            if neo < 0:
+                neo = eo
+            if nco < 0:
+                nco = co
+            if nud < 0:
+                nud = ud
             path.append(mi)
             result = self._p1_search(neo, nco, nud, g + 1, bound, path, mi)
             path.pop()
@@ -478,9 +494,12 @@ class Kociemba_Algorithm(CubeAlgorithm):
             ncp  = self._mt_cp[cp][mi]
             nep8 = self._mt_ep8[ep8][mi]
             nsp  = self._mt_sp[sp][mi]
-            if ncp  < 0: ncp  = cp
-            if nep8 < 0: nep8 = ep8
-            if nsp  < 0: nsp  = sp
+            if ncp < 0:
+                ncp = cp
+            if nep8 < 0:
+                nep8 = ep8
+            if nsp < 0:
+                nsp = sp
             path.append(mi)
             result = self._p2_search(ncp, nep8, nsp, g + 1, bound, path, mi)
             path.pop()

@@ -276,7 +276,10 @@ def build_f2l_table(slot, corner_colours, edge_colours, preserve_slots, max_dept
     """
     solved     = Cube().state
     slot_done  = F2L_SLOT_SOLVED[slot]
-    sig_fn     = lambda s: get_piece_signature(s, corner_colours, edge_colours)
+
+    def sig_fn(s):
+        return get_piece_signature(s, corner_colours, edge_colours)
+
     composites = _generate_safe_composites(solved, preserve_slots, max_len=3)
 
     lut         = {}
@@ -326,9 +329,12 @@ def get_oll_orient_key(state):
     _edge_idxs   = ((7, 19), (5, 10), (1, 46), (3, 37))
     key = []
     for i0, i1, i2 in _corner_idxs:
-        if   state[i0] in ("U", "D"): key.append(0)
-        elif state[i1] in ("U", "D"): key.append(1)
-        else:                         key.append(2)
+        if state[i0] in ("U", "D"):
+            key.append(0)
+        elif state[i1] in ("U", "D"):
+            key.append(1)
+        else:
+            key.append(2)
     for i0, i1 in _edge_idxs:
         key.append(0 if state[i0] in ("U", "D") else 1)
     return tuple(key)

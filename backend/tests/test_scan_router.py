@@ -7,7 +7,6 @@ SYSC3010 L3-G6
 
 import pytest
 import sqlite3
-import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -149,7 +148,6 @@ class TestScanSubmitEndpoint:
         """Successfully submit a valid scan."""
         from backend.routers.scan import submit_scan
         from backend.schemas import ScanSubmitRequest
-        from backend.deps import get_db_dep
         
         # Mock CRUD functions
         with patch("backend.routers.scan.crud") as mock_crud:

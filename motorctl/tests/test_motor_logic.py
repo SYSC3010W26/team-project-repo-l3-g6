@@ -1,5 +1,4 @@
 import pytest
-import asyncio
 from unittest.mock import AsyncMock, patch
 from motorctl.src.server_bridge import MotorController, MotorState
 

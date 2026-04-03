@@ -1,6 +1,4 @@
-import pytest
-from database import db, crud
-from database.models import SolveSessionCreate
+from database import crud
 
 def test_submit_solution_stores_steps(client):
     # GIVEN a session exists

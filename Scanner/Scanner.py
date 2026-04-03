@@ -430,7 +430,7 @@ def main():
 
     print(f"\n  State string: {state_string}")
     print(f"  Confidence:   {confidence:.2%}")
-    print(f"  Validation:   OK")
+    print("  Validation:   OK")
 
     with open("cube_state.json", "w") as f:
         json.dump(scanned_faces, f, indent=2)

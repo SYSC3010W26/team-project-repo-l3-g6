@@ -149,7 +149,7 @@ def run_e2e_demo():
     if r.status_code != 200:
         print(f"❌ Failed to submit scan: {r.text}")
         return
-    print(f"      ✅ Cube scanned and validated!")
+    print("      ✅ Cube scanned and validated!")
 
     # Emit scan complete event
     if sio.connected:
@@ -166,7 +166,7 @@ def run_e2e_demo():
     if r.status_code != 200:
         print(f"❌ Failed to start solve: {r.text}")
         return
-    print(f"      ✅ Solver triggered! (Real solver will pick this up)")
+    print("      ✅ Solver triggered! (Real solver will pick this up)")
 
     if sio.connected:
         sio.emit(
@@ -192,11 +192,11 @@ def run_e2e_demo():
             r = requests.get(f"{SERVER_URL}/solve/{session_id}", timeout=5)
             if r.status_code == 200:
                 solution = r.json()
-                print(f"\n      ✅ SOLUTION FOUND!")
+                print("\n      ✅ SOLUTION FOUND!")
                 print(f"      📊 Algorithm: {solution['algorithm_used']}")
                 print(f"      📈 Moves: {solution['move_count']}")
                 print(f"      🔧 Solution: {solution['solution_string'][:50]}...")
-        except Exception as e:
+        except Exception:
             pass
 
         # Show progress dots
