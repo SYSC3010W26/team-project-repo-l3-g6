@@ -1,3 +1,4 @@
+""" Tests for motor control logic and state management. """
 import pytest
 from unittest.mock import AsyncMock, patch
 from motorctl.src.server_bridge import MotorController, MotorState

@@ -1,3 +1,4 @@
+""" Tests for backend solving logic. """
 from database import crud
 
 def test_submit_solution_stores_steps(client):
